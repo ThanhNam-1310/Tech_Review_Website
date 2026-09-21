@@ -1,0 +1,112 @@
+export const categories = [
+  {
+    id: 1,
+    name: "Điện thoại",
+    children: [
+      { id: 11, name: "iPhone" },
+      { id: 12, name: "Samsung" },
+      { id: 13, name: "Xiaomi" },
+    ],
+  },
+  {
+    id: 2,
+    name: "Laptop",
+    children: [
+      { id: 21, name: "MacBook" },
+      { id: 22, name: "Dell" },
+      { id: 23, name: "Asus" },
+    ],
+  },
+  {
+    id: 3,
+    name: "Tai nghe",
+    children: [
+      { id: 31, name: "Sony" },
+      { id: 32, name: "Apple" },
+      { id: 33, name: "Bose" },
+    ],
+  },
+  {
+    id: 4,
+    name: "Đồng hồ thông minh",
+  },
+  {
+    id: 5,
+    name: "Máy ảnh",
+  },
+];
+
+export const products = [
+  {
+    id: 1,
+    name: "iPhone 16 Pro",
+    categoryId: 11,
+    categoryName: "iPhone",
+    score: 8.8,
+    price: "28.990.000đ",
+    image: "https://images.unsplash.com/photo-1695048133142-1a20484428d2?w=500&q=80",
+  },
+  {
+    id: 2,
+    name: "Samsung Galaxy S24 Ultra",
+    categoryId: 12,
+    categoryName: "Samsung",
+    score: 8.9,
+    price: "26.990.000đ",
+    image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80",
+  },
+  {
+    id: 3,
+    name: "MacBook Air M3",
+    categoryId: 21,
+    categoryName: "MacBook",
+    score: 9.2,
+    price: "27.990.000đ",
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80",
+  },
+  {
+    id: 4,
+    name: "Dell XPS 13",
+    categoryId: 22,
+    categoryName: "Dell",
+    score: 8.4,
+    price: "32.990.000đ",
+    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500&q=80",
+  },
+  {
+    id: 5,
+    name: "Sony WH-1000XM5",
+    categoryId: 31,
+    categoryName: "Sony",
+    score: 8.5,
+    price: "7.490.000đ",
+    image: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=500&q=80",
+  },
+  {
+    id: 6,
+    name: "AirPods Pro 2",
+    categoryId: 32,
+    categoryName: "Apple",
+    score: 8.7,
+    price: "5.990.000đ",
+    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=500&q=80",
+  },
+  {
+    id: 7,
+    name: "Apple Watch Series 10",
+    categoryId: 4,
+    categoryName: "Đồng hồ thông minh",
+    score: 8.6,
+    price: "10.990.000đ",
+    image: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=500&q=80",
+  },
+  {
+    id: 8,
+    name: "Xiaomi 14 Ultra",
+    categoryId: 13,
+    categoryName: "Xiaomi",
+    score: 8.3,
+    price: "19.990.000đ",
+    image: "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500&q=80",
+  },
+];
