@@ -2,8 +2,9 @@
 
 namespace server.Models
 {
-    public class PostContent
+    public class PostContent: BaseModels
     {
+        public Guid PostId { get; set; }
         // loại content: image / text
         public PostContentType Type { get; set; } = PostContentType.Image;
 

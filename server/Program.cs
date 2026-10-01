@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
@@ -5,7 +6,9 @@ using Serilog;
 using Serilog.Events;
 using server.Configurations;
 using server.Data;
+using server.Data.Seeder;
 using server.Middleware;
+using server.Models;
 using server.Services.Implements;
 using server.Services.Interfaces;
 
@@ -43,6 +46,9 @@ try
     builder.Services.AddSingleton(
         new MongoDbContext(mongoSetting));
 
+    // JWT
+    builder.Services.AddJwtAuthencation(builder.Configuration);
+
     // ==============================
     // AutoMapper
     // ==============================
@@ -64,12 +70,25 @@ try
     // ==============================
     // Services
     // ==============================
-
+    builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<ISpecificationService, SpecificationService>();
     builder.Services.AddScoped<IProductService, ProductService>();
+    builder.Services.AddScoped<IPostContentService, PostContentService>();
+    builder.Services.AddScoped<IPostService, PostService>();
+    builder.Services.AddScoped<ITokenService, TokenService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IRoleService, RoleService>();
 
     var app = builder.Build();
+    // Seeder
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider
+            .GetRequiredService<MongoDbContext>();
+
+        await RoleSeeder.SeedRoleAsync(context);
+    }
 
     // ==============================
     // Middleware
@@ -112,6 +131,7 @@ try
 
     app.UseHttpsRedirection();
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();
@@ -135,6 +155,8 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Tech Review API terminated unexpectedly.");
+    //Console.WriteLine(ex.ToString());
+    //throw;
 }
 finally
 {

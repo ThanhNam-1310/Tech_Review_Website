@@ -1,4 +1,6 @@
 ﻿using Microsoft.OpenApi;
+using System.Reflection.Metadata;
+using System.Xml.Linq;
 
 namespace server.Configurations
 {
@@ -18,6 +20,25 @@ namespace server.Configurations
                         Title = "Tech Review API",
                         Version = "v1",
                         Description = "API for Tech Review Website"
+                    });
+                options.AddSecurityDefinition(
+                    "Bearer",
+                    new OpenApiSecurityScheme
+                    {
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "bearer",
+                        BearerFormat = "JWT",
+                        In = ParameterLocation.Header,
+                        Description = "Enter your JWT token"
+                    });
+
+                options.AddSecurityRequirement(document =>
+                    new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference(
+                            "Bearer",
+                            document)] = []
                     });
             });
 
