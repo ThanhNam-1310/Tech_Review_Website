@@ -1,31 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProductInfo({ product }) {
-  const [selectedImage, setSelectedImage] = useState(product.image);
+  const images = product.images?.length ? product.images : [product.image];
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const timerRef = useRef(null);
+
+  const selectedImage = images[selectedIndex];
+
+  // Reset timer: mỗi 3s chuyển ảnh tiếp theo
+  const startAutoPlay = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(() => {
+      setSelectedIndex((prev) => (prev + 1) % images.length);
+    }, 3000);
+  };
+
+  // Chạy autoplay khi index / danh sách ảnh đổi
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    startAutoPlay();
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [selectedIndex, images.length]);
+
+  // Click thumbnail → đổi ảnh + reset timer từ đầu
+  const handleSelectImage = (index) => {
+    setSelectedIndex(index);
+    // useEffect sẽ clear + set lại timeout
+  };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
       {/* Ảnh */}
-      <div className="space-y-4">
-        <div className="aspect-square overflow-hidden rounded-2xl border bg-muted">
+      <div className="space-y-3 w-full">
+        <div className="aspect-[4/3] w-full overflow-hidden rounded-xl border bg-muted flex items-center justify-center">
           <img
             src={selectedImage}
             alt={product.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain p-4 transition-opacity duration-300"
           />
         </div>
 
         {/* Thumbnail */}
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {product.images?.map((img, index) => (
+        <div className="flex gap-2.5 overflow-x-auto pb-1">
+          {images.map((img, index) => (
             <button
               key={index}
-              onClick={() => setSelectedImage(img)}
-              className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                selectedImage === img
-                  ? "border-primary"
+              type="button"
+              onClick={() => handleSelectImage(index)}
+              className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-[3px] transition-all ${
+                selectedIndex === index
+                  ? "border-orange-600 opacity-100"
                   : "border-transparent opacity-70 hover:opacity-100"
               }`}
             >
@@ -64,38 +95,6 @@ export default function ProductInfo({ product }) {
           {product.summary}
         </p>
 
-        {/* Pros & Cons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          <div className="rounded-xl border p-4 bg-green-50/50 dark:bg-green-950/20">
-            <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">
-              Ưu điểm
-            </h3>
-            <ul className="space-y-1.5 text-sm">
-              {product.pros?.map((item, i) => (
-                <li key={i} className="flex gap-2">
-                  <span className="text-green-600">+</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-xl border p-4 bg-red-50/50 dark:bg-red-950/20">
-            <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">
-              Nhược điểm
-            </h3>
-            <ul className="space-y-1.5 text-sm">
-              {product.cons?.map((item, i) => (
-                <li key={i} className="flex gap-2">
-                  <span className="text-red-600">−</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Specs */}
         <div className="rounded-xl border p-5">
           <h3 className="font-semibold mb-4">Thông số kỹ thuật</h3>
           <div className="space-y-3">

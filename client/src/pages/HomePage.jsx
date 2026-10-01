@@ -1,17 +1,11 @@
-import ProductReview from "@/components/sections/ProductReview";
+// import ProductReview from "@/components/sections/ProductReview";
 import React from "react";
-import { categories, products } from "@/utils/demo/data";
+import Header from "@/components/header/Header";
 
 const HomePage = () => {
   return (
     <div>
-      {/* Các section của home */}
-      <ProductReview
-        categories={categories}
-        products={products}
-        currentPage={1}
-        totalPages={1}
-      />
+      <Header />
     </div>
   );
 };

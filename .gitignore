@@ -52,3 +52,28 @@ Thumbs.db
 # ========================================
 
 *.log
+
+# ========================================
+# .NET / ASP.NET Core
+# ========================================
+
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test results
+TestResults/
+*.trx
+
+# ASP.NET Core local settings
+appsettings.Development.json
+appsettings.Local.json
+
+# User secrets
+secrets.json

@@ -8,17 +8,18 @@ import ProductInfo from "@/components/products/ProductInfo";
 import ProductComments from "@/components/products/ProductComments";
 
 import { productDetail, comments } from "@/utils/demo/productDetailDemo";
+import Comments from "@/components/common/Comment";
 
 export default function ProductDetail() {
   const { id } = useParams(); // dùng khi nối API thật
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12 flex-col">
         {/* Back button */}
         <div className="mb-6">
           <Button variant="ghost" size="sm" asChild className="gap-1.5 -ml-2">
-            <Link to="/">
+            <Link to="/products">
               <ChevronLeft className="h-4 w-4" />
               Quay lại
             </Link>
@@ -31,7 +32,8 @@ export default function ProductDetail() {
         <Separator className="my-10 md:my-14" />
 
         {/* Phần bình luận */}
-        <ProductComments comments={comments} />
+        {/* <ProductComments comments={comments} /> */}
+        <Comments comments={comments} title="Bình luận" />
       </div>
     </div>
   );

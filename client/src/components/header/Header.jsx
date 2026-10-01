@@ -13,8 +13,8 @@ import {
 
 const navItems = [
   { label: "Trang chủ", href: "/" },
-  { label: "Đánh giá", href: "/reviews" },
-  { label: "Tin tức", href: "/news" },
+  { label: "Bài viết", href: "/post" },
+  { label: "Sản phẩm", href: "/products" },
   { label: "Danh mục", href: "/categories" },
 ];
 

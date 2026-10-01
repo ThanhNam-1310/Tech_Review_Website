@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { ThumbsUp, MessageSquare } from "lucide-react";
+import { MessageSquare, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function ProductComments({ comments: initialComments = [] }) {
+export default function Comments({
+  comments: initialComments = [],
+  title = "Bình luận",
+}) {
   const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState("");
 
-  const handleSubmitComment = () => {
+  const handleSubmit = () => {
     if (!newComment.trim()) return;
 
     const comment = {
@@ -26,13 +29,15 @@ export default function ProductComments({ comments: initialComments = [] }) {
   };
 
   return (
-    <div className="max-w-5xl  mx-auto px-6">
+    <div className="max-w-3xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
         <MessageSquare className="h-5 w-5" />
-        <h2 className="text-xl font-bold">Bình luận ({comments.length})</h2>
+        <h2 className="text-xl font-bold">
+          {title} ({comments.length})
+        </h2>
       </div>
 
-      {/* Form viết bình luận */}
+      {/* Form */}
       <div className="mb-8 space-y-3">
         <Textarea
           placeholder="Viết bình luận của bạn..."
@@ -41,37 +46,40 @@ export default function ProductComments({ comments: initialComments = [] }) {
           className="min-h-[100px] resize-none"
         />
         <div className="flex justify-end">
-          <Button onClick={handleSubmitComment} disabled={!newComment.trim()}>
+          <Button onClick={handleSubmit} disabled={!newComment.trim()}>
             Gửi bình luận
           </Button>
         </div>
       </div>
 
-      {/* Danh sách comment */}
+      {/* List */}
       <div className="space-y-6">
         {comments.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">
+          <p className="text-sm text-muted-foreground text-center py-8">
             Chưa có bình luận nào. Hãy là người đầu tiên!
           </p>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
+          comments.map((c) => (
+            <div key={c.id} className="flex gap-3">
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={comment.avatar} />
-                <AvatarFallback>{comment.user?.[0] || "U"}</AvatarFallback>
+                <AvatarImage src={c.avatar} />
+                <AvatarFallback>{c.user?.[0] || "U"}</AvatarFallback>
               </Avatar>
 
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">{comment.user}</span>
+                  <span className="font-semibold text-sm">{c.user}</span>
                   <span className="text-xs text-muted-foreground">
-                    {comment.createdAt}
+                    {c.createdAt}
                   </span>
                 </div>
-                <p className="text-sm leading-relaxed">{comment.content}</p>
-                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mt-1">
+                <p className="text-sm leading-relaxed">{c.content}</p>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mt-1"
+                >
                   <ThumbsUp className="h-3.5 w-3.5" />
-                  {comment.likes > 0 && <span>{comment.likes}</span>}
+                  {c.likes > 0 && <span>{c.likes}</span>}
                   <span>Thích</span>
                 </button>
               </div>
