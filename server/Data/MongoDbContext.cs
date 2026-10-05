@@ -26,6 +26,8 @@ namespace server.Data
         public IMongoCollection<Specification> Specifications => _db.GetCollection<Specification>("specifications");
         public IMongoCollection<Post> Posts => _db.GetCollection<Post>("posts");
         public IMongoCollection<PostContent> PostContents => _db.GetCollection<PostContent>("post_contents");
+        public IMongoCollection<Comment> Comments => _db.GetCollection<Comment>("comments");
+        public IMongoCollection<Rating> Ratings => _db.GetCollection<Rating>("ratings");
         public IMongoCollection<AuditLog> AuditLogs => _db.GetCollection<AuditLog>("audit_logs");
     }
 }

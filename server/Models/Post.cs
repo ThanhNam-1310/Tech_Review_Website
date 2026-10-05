@@ -20,6 +20,9 @@ namespace server.Models
         // các nội dung trong bài viết
         public List<PostContent> Contents { get; set; } = [];
 
+        // rating
+        public Rating Rating { get; set; } = new Rating();
+
         // ngày công khai
         public DateTime? PublicDate { get; set; }
     }

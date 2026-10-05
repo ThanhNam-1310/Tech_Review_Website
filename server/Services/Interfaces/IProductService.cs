@@ -27,5 +27,13 @@ namespace server.Services.Interfaces
 
         // xóa product
         Task<bool> DeleteProductAsync(Guid id);
+
+        //rating
+        Task IncreaseViewCountAsync(Guid productId);
+        Task TangLikeCountAsync(Guid productId);
+        Task GiamLikeCountAsync(Guid productId);
+        Task IncreaseSharedCountAsync(Guid productId);
+        Task TangCommentAsync(Guid productId);
+        Task GiamCommentAsync(Guid productId);
     }
 }

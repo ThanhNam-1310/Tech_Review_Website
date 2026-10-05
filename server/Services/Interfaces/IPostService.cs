@@ -1,4 +1,5 @@
-﻿using server.Dtos.Posts;
+﻿using server.Dtos.PostContents;
+using server.Dtos.Posts;
 
 namespace server.Services.Interfaces
 {
@@ -30,5 +31,14 @@ namespace server.Services.Interfaces
 
         // từ chối bài viết (dành cho admin)
         Task RejectPostAsync(Guid postId);
+
+
+        //rating
+        Task IncreaseViewCountAsync(Guid postId);
+        Task TangLikeCountAsync(Guid postId);
+        Task GiamLikeCountAsync(Guid postId);
+        Task IncreaseSharedCountAsync(Guid postId);
+        Task TangCommentAsync(Guid postId);
+        Task GiamCommentAsync(Guid postId);
     }
 }

@@ -23,6 +23,9 @@
         // Xóa mềm
         public bool IsDeleted { get; set; } = false;
 
+        // rating
+        public Rating Rating { get; set; } = new Rating();
+
         // các ảnh của sản phẩm
         public List<string> ProductImagesUrl { get; set; } = [];
 

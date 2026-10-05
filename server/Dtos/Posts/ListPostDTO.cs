@@ -7,5 +7,6 @@
         public string ThumbnailUrl { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
         public DateTime? PublicDate { get; set; }
+        
     }
 }

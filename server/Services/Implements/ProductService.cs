@@ -142,5 +142,59 @@ namespace server.Services.Implements
 
             return _mapper.Map<ProductDTO>(product);
         }
+
+        public async Task TangLikeCountAsync(Guid productId)
+        {
+            var like = Builders<Post>.Filter.Eq(p => p.Id, productId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.LikeCount, 1);
+
+            await _context.Posts.UpdateOneAsync(like, update);
+        }
+
+        public async Task GiamLikeCountAsync(Guid productId)
+        {
+            var like = Builders<Post>.Filter.Eq(p => p.Id, productId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.LikeCount, -1);
+
+            await _context.Posts.UpdateOneAsync(like, update);
+        }
+
+        public async Task IncreaseSharedCountAsync(Guid productId)
+        {
+            var shared = Builders<Product>.Filter.Eq(p => p.Id, productId);
+
+            var update = Builders<Product>.Update.Inc(p => p.Rating.SharedCount, 1);
+
+            await _context.Products.UpdateOneAsync(shared, update);
+        }
+
+        public async Task IncreaseViewCountAsync(Guid productId)
+        {
+            var liked = Builders<Product>.Filter.Eq(p => p.Id, productId);
+
+            var update = Builders<Product>.Update.Inc(p => p.Rating.ViewCount, 1);
+
+            await _context.Products.UpdateOneAsync(liked, update);
+        }
+
+        public async Task TangCommentAsync(Guid productId)
+        {
+            var comment = Builders<Product>.Filter.Eq(p => p.Id, productId);
+
+            var update = Builders<Product>.Update.Inc(p => p.Rating.CommentCount, 1);
+
+            await _context.Products.UpdateOneAsync(comment, update);
+        }
+
+        public async Task GiamCommentAsync(Guid productId)
+        {
+            var comment = Builders<Product>.Filter.Eq(p => p.Id, productId);
+
+            var update = Builders<Product>.Update.Inc(p => p.Rating.CommentCount, -1);
+
+            await _context.Products.UpdateOneAsync(comment, update);
+        }
     }
 }

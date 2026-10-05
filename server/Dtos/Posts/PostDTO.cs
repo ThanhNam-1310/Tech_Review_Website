@@ -1,4 +1,5 @@
 ﻿using server.Dtos.PostContents;
+using server.Dtos.Rating;
 
 namespace server.Dtos.Posts
 {
@@ -15,6 +16,7 @@ namespace server.Dtos.Posts
         public string Status { get; set; } = string.Empty;
         public string Visibility { get; set; } = string.Empty;
         public DateTime? PublicDate { get; set; }
+        public RatingDTO? Rating { get; set; }
         public List<PostContentDTO> Contents { get; set; } = [];
     }
 }

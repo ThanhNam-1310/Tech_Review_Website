@@ -9,12 +9,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace server.Services.Implements
 {
-    public class PostService(MongoDbContext context, IMapper mapper, ILogger<PostService> logger, IPostContentService postContentService) : IPostService
+    public class PostService(MongoDbContext context, IMapper mapper, ILogger<PostService> logger) : IPostService
     {
         private readonly IMapper _mapper = mapper;
         private readonly ILogger<PostService> _logger = logger;
         private readonly MongoDbContext _context = context;
-        private readonly IPostContentService _postContentService = postContentService;
 
         // phê duyệt bài viết (dành co admin)
         public Task ApprovePostAsync(Guid postId)
@@ -34,7 +33,12 @@ namespace server.Services.Implements
                 CategoryId = dto.CategoryId,
                 Visibility = dto.Visibility,
                 Status = Common.Enums.PostStatus.New,
-                PublicDate = DateTime.UtcNow
+                PublicDate = DateTime.UtcNow,
+                Contents = dto.Contents.Select(c =>  new PostContent
+                {
+                    Type = c.PostContentType,
+                    ValueType = c.ValueContent
+                }).ToList(),
             };
 
             _logger.LogInformation("SUCCESS: Create new post ID: {id}", post.Id);
@@ -93,12 +97,9 @@ namespace server.Services.Implements
                 .Project(u => new { u.Id, u.FullName })
                 .FirstOrDefaultAsync();
 
-            var contents = await _postContentService.GetAllByPostIdAsync(post.Id);
-
             var result = _mapper.Map<PostDTO>(post);
             //result.AuthorId = user!.Id;
             result.AuthorName = user?.FullName ?? string.Empty;
-            result.Contents = contents.ToList();
 
             _logger.LogInformation("SUCCESS: Get detail post ID: {id}", id);
             return result;
@@ -170,6 +171,16 @@ namespace server.Services.Implements
             post.ProductId = dto.ProductId ?? post.ProductId;
             post.Visibility = dto.Visibility ?? post.Visibility;
 
+            // update content
+            if (dto.Contents != null)
+            {
+                post.Contents = dto.Contents.Select(c => new PostContent
+                {
+                    Type = c.PostContentType,
+                    ValueType = c.ValueContent ?? string.Empty,
+                }).ToList();
+            }
+
             // audit
             post.UpdatedAt = DateTime.UtcNow;
 
@@ -177,6 +188,60 @@ namespace server.Services.Implements
 
             _logger.LogInformation("SUCCESS: Update post ID: {id}", postId);
             return _mapper.Map<PostDTO>(post);
+        }
+
+        public async Task TangLikeCountAsync(Guid postId)
+        {
+            var like = Builders<Post>.Filter.Eq(p => p.Id, postId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.LikeCount, 1);
+
+            await _context.Posts.UpdateOneAsync(like, update);
+        }
+
+        public async Task GiamLikeCountAsync(Guid postId)
+        {
+            var like = Builders<Post>.Filter.Eq(p => p.Id, postId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.LikeCount, -1);
+
+            await _context.Posts.UpdateOneAsync(like, update);
+        }
+
+        public async Task IncreaseSharedCountAsync(Guid postId)
+        {
+            var shared = Builders<Post>.Filter.Eq(p => p.Id, postId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.SharedCount, 1);
+
+            await _context.Posts.UpdateOneAsync(shared, update);
+        }
+
+        public async Task IncreaseViewCountAsync(Guid postId)
+        {
+            var liked = Builders<Post>.Filter.Eq(p => p.Id, postId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.ViewCount, 1);
+
+            await _context.Posts.UpdateOneAsync(liked, update);
+        }
+
+        public async Task TangCommentAsync(Guid postId)
+        {
+            var comment = Builders<Post>.Filter.Eq( p => p.Id, postId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.CommentCount, 1);
+
+            await _context.Posts.UpdateOneAsync(comment, update);
+        }
+
+        public async Task GiamCommentAsync(Guid postId)
+        {
+            var comment = Builders<Post>.Filter.Eq(p => p.Id, postId);
+
+            var update = Builders<Post>.Update.Inc(p => p.Rating.CommentCount, -1);
+
+            await _context.Posts.UpdateOneAsync(comment, update);
         }
     }
 }

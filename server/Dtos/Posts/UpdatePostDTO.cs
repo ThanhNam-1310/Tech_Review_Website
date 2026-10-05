@@ -1,4 +1,5 @@
 ﻿using server.Common.Enums;
+using server.Dtos.PostContents;
 
 namespace server.Dtos.Posts
 {
@@ -12,5 +13,6 @@ namespace server.Dtos.Posts
 
         // phạm vi bài viết - mặc định công khai
         public PostVisibility? Visibility { get; set; }
+        public List<UpdatePostContentDTO> Contents { get; set; } = [];
     }
 }

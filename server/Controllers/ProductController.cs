@@ -67,5 +67,37 @@ namespace server.Controllers
             return Ok(result);
         }
 
+        // rating
+        // tăng view
+        [HttpPost("{id:guid}/view")]
+        public async Task<IActionResult> ViewProduct(Guid id)
+        {
+            await _product.IncreaseViewCountAsync(id);
+            return Ok();
+        }
+
+        // tăng like
+        [HttpPost("{id:guid}/like")]
+        public async Task<IActionResult> LikeProduct(Guid id)
+        {
+            await _product.TangLikeCountAsync(id);
+            return Ok();
+        }
+
+        // giảm lượt like
+        [HttpDelete("{id:guid}/like")]
+        public async Task<IActionResult> GiamLikeProduct(Guid id)
+        {
+            await _product.GiamLikeCountAsync(id);
+            return Ok();
+        }
+
+        // tăng lượt share
+        [HttpPost("{id:guid}/share")]
+        public async Task<IActionResult> SharedProduct(Guid id)
+        {
+            await _product.IncreaseSharedCountAsync(id);
+            return Ok();
+        }
     }
 }
