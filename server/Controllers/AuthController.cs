@@ -1,16 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using server.Common.Exceptions;
 using server.Dtos.Auth;
-using server.Services.Implements;
 using server.Services.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace server.Controllers
 {
     [Route("api/auth")]
     [ApiController]
-    public class AuthController(IAuthService auth) : ControllerBase
+    public class AuthController(IAuthService auth, IUserService user) : ControllerBase
     {
         private readonly IAuthService _auth = auth;
+        private readonly IUserService _user = user;
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAllUser()
@@ -19,44 +23,22 @@ namespace server.Controllers
             return Ok(result);
         }
 
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMeUser()
+        {
+            var user = await _user.GetUserByIdAsync(GetCurrentUserId());
+            return Ok(user);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
             var loginResult = await _auth.LoginAsync(login);
 
-            // set HttpOnly cookie
-            if (!string.IsNullOrEmpty(loginResult.AccessToken))
-            {
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = loginResult.AccessTokenExpireAt,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Path = "/"
-                };
-                Response.Cookies.Append("jwt_token", loginResult.AccessToken, cookieOptions);
-            }
-
-            if (!string.IsNullOrEmpty(loginResult.RefreshToken))
-            {
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTime.UtcNow.AddDays(5),
-                    Path = "/api/auth/refresh-token"
-                };
-            }
+            SetAuthCookies(loginResult);
 
             return Ok(loginResult);
-            //return Ok(new AuthResponseDTO
-            //{
-            //    AccessToken = loginResult.AccessToken,
-            //    AccessTokenExpireAt = loginResult.AccessTokenExpireAt,
-            //    User = loginResult.User
-            //});
         }
 
         [HttpPost("register")]
@@ -67,23 +49,86 @@ namespace server.Controllers
         }
 
         [HttpPost("log-out")]
-        public async Task<IActionResult> LogOut([FromBody] RefreshTokenDTO dto)
+        public async Task<IActionResult> LogOut()
         {
-            await _auth.LogOutAsync(dto);
+            // refresh token lấy từ cookie, không lấy từ body nữa
+            var refreshToken = Request.Cookies["refresh_token"];
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+            {
+                await _auth.LogOutAsync(new RefreshTokenDTO { RefreshToken = refreshToken });
+            }
+
             Response.Cookies.Delete("jwt_token", new CookieOptions
             {
+                HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
                 Path = "/"
+            });
+            Response.Cookies.Delete("refresh_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/api/auth"
             });
             return NoContent();
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDTO dto)
+        public async Task<IActionResult> RefreshToken()
         {
-            var token = await _auth.RefreshTokenAsync(dto);
-            return Ok(token);
+            // refresh token lấy từ cookie, không lấy từ body nữa
+            var refreshToken = Request.Cookies["refresh_token"];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return Unauthorized();
+
+            var result = await _auth.RefreshTokenAsync(new RefreshTokenDTO { RefreshToken = refreshToken });
+
+            // set lại cả 2 cookie bằng token mới
+            SetAuthCookies(result);
+
+            return Ok(result);
+        }
+
+        // Set access token + refresh token vào HttpOnly cookie
+        private void SetAuthCookies(AuthResponseDTO result)
+        {
+            if (!string.IsNullOrEmpty(result.AccessToken))
+            {
+                Response.Cookies.Append("jwt_token", result.AccessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Expires = result.AccessTokenExpireAt,
+                    Path = "/"
+                });
+            }
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                Response.Cookies.Append("refresh_token", result.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddDays(5),
+                    // Path bao cả refresh-token và log-out để trình duyệt gửi kèm tới 2 endpoint này
+                    Path = "/api/auth"
+                });
+            }
+        }
+
+        // Lấy id của user đang đăng nhập từ JWT (trong cookie jwt_token)
+        private Guid GetCurrentUserId()
+        {
+            var raw = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+            return Guid.TryParse(raw, out var id)
+                ? id
+                : throw new BadRequestException("Token không hợp lệ.");
         }
     }
 }

@@ -17,5 +17,12 @@ namespace server.Controllers
             var result = await _roleService.GetAllRoles();
             return Ok(result);
         }
+
+        [HttpPatch("{roleId:guid}/user/{id:guid}")]
+        public async Task<IActionResult> SetRoleUser(Guid id, Guid roleId)
+        {
+            var result = await _roleService.SetRoleAsync(id, roleId);
+            return Ok(result);
+        }
     }
 }

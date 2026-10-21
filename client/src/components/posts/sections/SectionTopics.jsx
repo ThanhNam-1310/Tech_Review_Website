@@ -1,7 +1,9 @@
-import React from "react";
-import PostCard from "../PostCard";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
 
-const SectionTopics = ({ topics = [] }) => {
+const SectionTopics = ({ topics = [], getHref }) => {
+  const hrefOf = getHref ?? ((topic) => `/post?categoryId=${topic.id}`);
+
   return (
     <section>
       <div className="relative mb-6">
@@ -10,9 +12,18 @@ const SectionTopics = ({ topics = [] }) => {
           Khám phá theo chủ đề
         </h3>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {topics.map((topic) => (
-          <PostCard key={topic.id} post={topic} variant="topic" />
+          <Link key={topic.id} to={hrefOf(topic)}>
+            <Card className="transition-colors hover:border-primary hover:bg-muted/50">
+              <CardContent className="flex items-center justify-center px-4 py-8">
+                <span className="text-sm font-semibold text-center">
+                  {topic.name}
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </section>

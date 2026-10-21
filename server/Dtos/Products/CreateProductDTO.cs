@@ -7,7 +7,6 @@
         public string Brand { get; set; } = string.Empty;
         public Guid CategoryId { get; set; }
         public decimal? Price { get; set; }
-        public string? ThumnailUrl { get; set; }
-        public List<string> Images { get; set; } = [];
+        public List<CreateProductSpecificationDTO> Specifications { get; set; } = [];
     }
 }

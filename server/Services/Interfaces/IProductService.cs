@@ -1,34 +1,43 @@
-﻿using server.Dtos.Products;
+﻿using server.Common.Pagination;
+using server.Dtos.Products;
 
 namespace server.Services.Interfaces
 {
     public interface IProductService
     {
-        // get all product
-        Task<IEnumerable<ListProductDTO>> GetAllProductAsync();
+        // Lấy tất cả sản phẩm có phân trang
+        Task<PageResult<ListProductDTO>> GetAllProductAsync(PageRequest request);
 
-        // lấy danh sách product của 1 category
-        Task<IEnumerable<ListProductDTO>> GetProductByCategoryId(Guid categoryId);
+        // Lấy sản phẩm theo danh mục có phân trang
+        Task<PageResult<ListProductDTO>> GetProductByCategoryIdAsync(
+            Guid categoryId, PageRequest request);
 
-        // get product by id
+        // lấy danh sách sản phẩm mà user đã tạo
+        Task<PageResult<ListProductDTO>> GetMyProductsAsync(PageRequest request);
+
+        // Chi tiết sản phẩm
         Task<ProductDTO> GetProductByIdAsync(Guid id);
 
-        // thêm mới product
-        Task<ProductDTO> CreateProductAsync(CreateProductDTO dTO);
+        // Thêm sản phẩm
+        Task<ProductDTO> CreateProductAsync(CreateProductDTO dto);
 
-        // cập nhật product
-        Task<ProductDTO> UpdateProductAsync(Guid id, UpdateProductDTO dTO);
+        // Cập nhật sản phẩm
+        Task<ProductDTO> UpdateProductAsync(Guid id, UpdateProductDTO dto);
 
-        // xóa mềm product
+        // Xóa mềm
         Task<bool> SoftDeleteProductAsync(Guid id);
 
-        // khôi phục
+        // Khôi phục sản phẩm
         Task<bool> RevokeSoftDeleteProductAsync(Guid id);
 
-        // xóa product
+        // Xóa vĩnh viễn
         Task<bool> DeleteProductAsync(Guid id);
 
-        //rating
+        // upload ảnh
+        Task<string> UploadProductThumbnailAsync(IFormFile file, Guid productId);
+        Task<string> UploadProductImageAsync(IFormFile file, Guid productId);
+
+        // Rating
         Task IncreaseViewCountAsync(Guid productId);
         Task TangLikeCountAsync(Guid productId);
         Task GiamLikeCountAsync(Guid productId);

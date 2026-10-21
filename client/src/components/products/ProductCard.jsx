@@ -8,12 +8,14 @@ export default function ProductCard({ product }) {
       to={`/products/${product.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border bg-card transition-all duration-200 hover:shadow-md"
     >
-      {/* object-contain: không cắt ảnh */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
-          src={product.image}
+          src={product.thumnailUrl || product.images?.[0] || "/placeholder.png"}
           alt={product.name}
           className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.png";
+          }}
         />
       </div>
 
@@ -21,23 +23,24 @@ export default function ProductCard({ product }) {
         <div className="flex items-center justify-between gap-2">
           <Badge
             variant="secondary"
-            className="font-normal text-[10px] px-1.5 py-0 shrink-0"
+            className="shrink-0 px-1.5 py-0 text-[10px] font-normal"
           >
-            {product.categoryName}
+            {product.categoryName || "Chưa phân loại"}
           </Badge>
-          <div className="flex items-center gap-0.5 text-xs font-semibold shrink-0">
+
+          <div className="flex shrink-0 items-center gap-0.5 text-xs font-semibold">
             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            {product.score}
+            {product.score ?? product.rating?.averageRating ?? 0}
           </div>
         </div>
 
-        <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
           {product.name}
         </h3>
 
-        {product.price && (
+        {product.price != null && (
           <p className="mt-auto text-sm font-semibold text-primary">
-            {product.price}
+            {Number(product.price).toLocaleString("vi-VN")} ₫
           </p>
         )}
       </div>

@@ -11,8 +11,14 @@
         // id của danh mục (cate) của sản phẩm
         public Guid CategoryId { get; set; }
 
+        // id của người tạo sản phẩm là chuyên gia
+        public Guid CreatedById { get; set; }
+
         // mô tả của sản phẩm
-        public string? Description { get; set; } 
+        public string? Description { get; set; }
+
+        // dùng để search
+        public string SearchText { get; set; } = string.Empty;
 
         // giá của sản phẩm, có thể null nếu chưa có thông tin giá
         public decimal? Price { get; set; }

@@ -27,7 +27,6 @@ namespace server.Services.Implements
             {
                 Name = dto.Name,
                 CategoryId = dto.CategoryId,
-                DisplayOrder = dto.DisplayOrder,
                 UpdatedAt = null
             };
             var result = _mapper.Map<SpecificationDTO>(specification);
@@ -48,16 +47,14 @@ namespace server.Services.Implements
 
         public async Task<IEnumerable<SpecificationDTO>> GetAllSpeciAsync()
         {
-            var specifications = await _context.Specifications.Find(_ => true)
-                .SortBy(x => x.DisplayOrder).ToListAsync();
+            var specifications = await _context.Specifications.Find(_ => true).ToListAsync();
 
             return _mapper.Map<IEnumerable<SpecificationDTO>>(specifications);
         }
 
         public async Task<IEnumerable<SpecificationDTO>> GetByCategoryIdAsync(Guid categoryId)
         {
-            var specification = await _context.Specifications.Find(s => s.CategoryId == categoryId)
-                .SortBy(s => s.DisplayOrder).ToListAsync();
+            var specification = await _context.Specifications.Find(s => s.CategoryId == categoryId).ToListAsync();
 
             return _mapper.Map<IEnumerable<SpecificationDTO>>(specification);
         }
@@ -76,8 +73,6 @@ namespace server.Services.Implements
                 specification.Name = dto.Name;
             if (dto.CategoryId.HasValue)
                 specification.CategoryId = dto.CategoryId.Value;
-            if (dto.DisplayOrder.HasValue)
-                specification.DisplayOrder = dto.DisplayOrder.Value;
 
             specification.UpdatedAt = DateTime.UtcNow;
 

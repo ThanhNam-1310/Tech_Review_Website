@@ -1,18 +1,20 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using server.Common.Constants;
 using server.Common.Enums;
+using server.Common.Exceptions;
 using server.Data;
 using server.Dtos.Auth;
 using server.Models;
 using server.Services.Interfaces;
-using server.Common.Exceptions;
-using server.Common.Constants;
+using server.Storage;
 
 namespace server.Services.Implements
 {
     public class AuthService(MongoDbContext context, ILogger<AuthService> logger, IConfiguration configuration,
-        IMapper mapper, ITokenService token, IPasswordHasher<User> passCheck, IRoleService roleService): IAuthService
+        IMapper mapper, ITokenService token, IPasswordHasher<User> passCheck, IRoleService roleService) : IAuthService
     {
         private readonly ILogger<AuthService> _logger = logger;
         private readonly IConfiguration _configuration = configuration;
@@ -141,6 +143,7 @@ namespace server.Services.Implements
             return new AuthResponseDTO
             {
                 AccessToken = accessToken,
+                AccessTokenExpireAt = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JWT:ExpiryMinutes"]!)),
                 RefreshToken = refreshTokenNew,
             };
         }
@@ -179,5 +182,6 @@ namespace server.Services.Implements
 
             return result;
         }
+
     }
 }

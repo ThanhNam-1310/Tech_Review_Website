@@ -21,6 +21,7 @@ namespace server.Data
         public IMongoCollection<User> Users => _db.GetCollection<User>("users");
         public IMongoCollection<RefreshToken> RefreshTokens => _db.GetCollection<RefreshToken>("refresh_tokens");
         public IMongoCollection<Role> Roles => _db.GetCollection<Role>("roles");
+        public IMongoCollection<Permission> Permissions => _db.GetCollection<Permission>("permissions");
         public IMongoCollection<Category> Categories => _db.GetCollection<Category>("categories");
         public IMongoCollection<Product> Products => _db.GetCollection<Product>("products");
         public IMongoCollection<Specification> Specifications => _db.GetCollection<Specification>("specifications");

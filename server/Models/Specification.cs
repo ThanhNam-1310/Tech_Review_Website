@@ -9,7 +9,5 @@
         // id của danh mục mà thông số này thuộc về
         public Guid CategoryId { get; set; }
 
-        // thứ tự ưu tiên hiển thị
-        public int DisplayOrder { get; set; }
     }
 }

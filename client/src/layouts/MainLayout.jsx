@@ -1,12 +1,16 @@
+import Header from "@/components/header/Header";
 import HomePage from "@/pages/HomePage";
 import React from "react";
+import { Outlet } from "react-router-dom";
 
 const MainLayout = () => {
   return (
-    <div>
-      {/* Các page nav ở đây */}
+    <div className="flex min-h-screen flex-col">
+      <Header />
 
-      <HomePage />
+      <main className="flex-1">
+        <Outlet />
+      </main>
     </div>
   );
 };

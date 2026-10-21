@@ -37,13 +37,9 @@ export default function ProductGrid({
     );
   }
 
-  if (products.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center py-20 border rounded-xl bg-muted/20 text-muted-foreground text-sm">
-        Không tìm thấy sản phẩm nào.
-      </div>
-    );
-  }
+  const isEmpty = totalItems === 0;
+  const displayTotalPages = isEmpty ? 0 : totalPages;
+  const displayCurrentPage = isEmpty ? 0 : currentPage;
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -54,7 +50,7 @@ export default function ProductGrid({
 
   return (
     <div className="w-full lg:w-3/4 flex flex-col px-4 py-3 rounded-3xl border-2 gap-3">
-      {/* Toolbar: số lượng hiển thị */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <p className="text-sm text-muted-foreground">
           Hiển thị{" "}
@@ -68,6 +64,7 @@ export default function ProductGrid({
           <span className="text-sm text-muted-foreground hidden sm:inline">
             Mỗi trang
           </span>
+
           <Select
             value={String(pageSize)}
             onValueChange={(val) => onPageSizeChange?.(Number(val))}
@@ -86,29 +83,41 @@ export default function ProductGrid({
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {/* Product list */}
+      {isEmpty ? (
+        <div className="flex items-center justify-center py-20 border rounded-xl bg-muted/20 text-muted-foreground text-sm">
+          Không tìm thấy sản phẩm nào.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className={cn(
-                    currentPage <= 1 &&
-                      "pointer-events-none opacity-50 cursor-not-allowed",
-                  )}
-                />
-              </PaginationItem>
+      <div className="mt-8 flex justify-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(currentPage - 1)}
+                className={cn(
+                  (isEmpty || currentPage <= 1) &&
+                    "pointer-events-none opacity-50 cursor-not-allowed",
+                )}
+              />
+            </PaginationItem>
 
-              {Array.from({ length: totalPages }).map((_, i) => {
+            {isEmpty ? (
+              <PaginationItem>
+                <PaginationLink isActive className="cursor-default">
+                  {displayCurrentPage}/{displayTotalPages}
+                </PaginationLink>
+              </PaginationItem>
+            ) : (
+              Array.from({ length: totalPages }).map((_, i) => {
                 const page = i + 1;
 
                 if (
@@ -138,21 +147,21 @@ export default function ProductGrid({
                 }
 
                 return null;
-              })}
+              })
+            )}
 
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className={cn(
-                    currentPage >= totalPages &&
-                      "pointer-events-none opacity-50 cursor-not-allowed",
-                  )}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(currentPage + 1)}
+                className={cn(
+                  (isEmpty || currentPage >= totalPages) &&
+                    "pointer-events-none opacity-50 cursor-not-allowed",
+                )}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }

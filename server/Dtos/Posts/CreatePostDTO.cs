@@ -7,7 +7,6 @@ namespace server.Dtos.Posts
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string ThumbnailUrl { get; set; } = string.Empty;
         public Guid? ProductId { get; set; }
         public Guid? CategoryId { get; set; }
 

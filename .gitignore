@@ -77,3 +77,6 @@ appsettings.Local.json
 
 # User secrets
 secrets.json
+
+server/appsettings.Development.json
+server/appsettings.json

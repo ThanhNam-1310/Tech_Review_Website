@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using server.Dtos.Auth;
 using server.Dtos.Role;
+using server.Dtos.User;
 using server.Models;
 
 namespace server.Mappings
@@ -11,6 +12,7 @@ namespace server.Mappings
         {
             CreateMap<User, UserInfo>();
             CreateMap<Role,RoleDTO>();
+            CreateMap<User,ListUserDTO>();
         }
     }
 }

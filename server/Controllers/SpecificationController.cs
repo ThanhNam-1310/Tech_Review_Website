@@ -18,7 +18,7 @@ namespace server.Controllers
             return Ok(result);
         }
 
-        [HttpGet("/category/{categoryId:guid}")]
+        [HttpGet("category/{categoryId:guid}")]
         public async Task<ActionResult<IEnumerable<SpecificationDTO>>> GetSpecificationByCategoryId(Guid categoryId)
         {
             var result = await _spec.GetByCategoryIdAsync(categoryId);

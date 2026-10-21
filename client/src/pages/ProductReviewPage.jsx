@@ -1,15 +1,53 @@
+import { useEffect, useState } from "react";
 import ProductReview from "@/components/sections/ProductReview";
-import React from "react";
-import { categories, products } from "@/utils/demo/data";
+import { GetAllCategories } from "@/apis/category.api";
+import { GetAllProduct } from "@/apis/product.api";
 
 const ProductReviewPage = () => {
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const [categoryResponse, productResponse] = await Promise.all([
+          GetAllCategories(),
+          GetAllProduct(),
+        ]);
+
+        const categoryData = categoryResponse.data;
+        const productData = productResponse.data;
+
+        setCategories(
+          Array.isArray(categoryData)
+            ? categoryData
+            : (categoryData?.items ?? []),
+        );
+
+        setProducts(
+          Array.isArray(productData) ? productData : (productData?.items ?? []),
+        );
+
+        console.log("Product API response:", productResponse.data);
+      } catch (error) {
+        console.error("Lỗi lấy dữ liệu từ BE:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div>
       <ProductReview
         categories={categories}
         products={products}
-        currentPage={1}
-        totalPages={1}
+        loading={loading}
       />
     </div>
   );

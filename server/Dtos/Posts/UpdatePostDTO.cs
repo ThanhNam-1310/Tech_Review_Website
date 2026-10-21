@@ -7,12 +7,11 @@ namespace server.Dtos.Posts
     {
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? ThumbnailUrl { get; set; }
         public Guid? ProductId { get; set; }
         public Guid? CategoryId { get; set; }
 
         // phạm vi bài viết - mặc định công khai
         public PostVisibility? Visibility { get; set; }
-        public List<UpdatePostContentDTO> Contents { get; set; } = [];
+        public List<UpdatePostContentDTO>? Contents { get; set; }
     }
 }

@@ -6,7 +6,7 @@ const SectionSplit = ({ featured, posts = [], title }) => {
     <section>
       {/* Title */}
       <div className="relative mb-6">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />
         <h3 className="relative inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-1 bg-primary text-primary-foreground">
           {title}
         </h3>

@@ -11,11 +11,17 @@ namespace server.Models
         public Guid? CategoryId { get; set; }
         public Guid? ProductId { get; set; }
 
-        // trạng thái bài viết
-        public PostStatus Status { get; set; } = PostStatus.New;
+        // phân biệt chữ có dấu cho search
+        public string SearchText { get; set; } = string.Empty;
 
         // phạm vi hiển thị
         public PostVisibility Visibility { get; set; } = PostVisibility.PostPublic;
+
+        // đánh dấu là nổi bật
+        public bool IsHightLight { get; set; } = false;
+
+        // đánh dấu là chuyên gia lựa chọn
+        public bool IsEditorPick { get; set; } = false;
 
         // các nội dung trong bài viết
         public List<PostContent> Contents { get; set; } = [];

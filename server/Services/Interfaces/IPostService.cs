@@ -1,39 +1,47 @@
-﻿using server.Dtos.PostContents;
+﻿using server.Common.Pagination;
+using server.Common.Pagination.Query;
 using server.Dtos.Posts;
 
 namespace server.Services.Interfaces
 {
     public interface IPostService
     {
-        // danh sách tất cả các  bài viết
-        Task<IEnumerable<ListPostDTO>> GetAllPostAsync();
+        // Danh sách tất cả bài viết
+        Task<PageResult<ListPostDTO>> GetAllPostAsync(PostQueryRequest request);
 
-        // get detail bài viết theo id
+        // Chi tiết bài viết
         Task<PostDTO> GetDetailPostById(Guid id);
 
-        // get danh sách bài viết theo id danh mục
-        Task<IEnumerable<ListPostDTO>> GetPostByCategoryIdAsync(Guid categoryId);
+        // Danh sách bài viết theo danh mục
+        Task<PageResult<ListPostDTO>> GetPostByCategoryIdAsync(
+            Guid categoryId, PageRequest request);
 
-        // get danh sách bài viết theo id sản phẩm
-        Task<IEnumerable<ListPostDTO>> GetPostByProductId(Guid productId);
+        // Danh sách bài viết theo sản phẩm
+        Task<PageResult<ListPostDTO>> GetPostByProductIdAsync(
+            Guid productId, PageRequest request);
 
-        // tạo mới bài viết
+        // danh sách bài viết theo id người dùng
+        Task<PageResult<ListPostDTO>> GetPostByAuthorIdAsync(Guid authorId, PageRequest request);
+
+        // Tạo bài viết
         Task<PostDTO> CreatePostAsync(CreatePostDTO dto);
 
-        // chỉnh sửa bài viết
+        // Cập nhật bài viết
         Task<PostDTO> UpdatePostAsync(Guid postId, UpdatePostDTO dto);
 
-        // xóa bài viết
+        // upload ảnh đại diện cho post
+        Task<string> UploadPostThumbnailAsync(IFormFile file, Guid postId);
+
+        // upload ảnh cho nội dung bài post
+        Task<string> UploadPostContentImageAsync(IFormFile file, Guid postId);
+
+        // Xóa bài viết
         Task<bool> DeletePostAsync(Guid postId);
 
-        // phê duyệt bài viết (dành cho admin)
-        Task ApprovePostAsync(Guid postId);
+        // Đặt bài viết làm chủ đề 
+        Task<PostDTO> SetHeroPostAsync(Guid postId);
 
-        // từ chối bài viết (dành cho admin)
-        Task RejectPostAsync(Guid postId);
-
-
-        //rating
+        // Rating
         Task IncreaseViewCountAsync(Guid postId);
         Task TangLikeCountAsync(Guid postId);
         Task GiamLikeCountAsync(Guid postId);

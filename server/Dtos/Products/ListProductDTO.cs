@@ -9,5 +9,6 @@
         public string? Brand { get; set; }
         public decimal? Price { get; set; }
         public string? ThumnailUrl { get; set; }
+
     }
 }

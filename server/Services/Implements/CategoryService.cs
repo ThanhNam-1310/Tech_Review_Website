@@ -93,6 +93,7 @@ namespace server.Services.Implements
 
             category.NameCategory = dTO.Name;
             category.ParentId = dTO.ParentId;
+            category.IsActive = dTO.IsActive;
             category.UpdatedAt = DateTime.UtcNow;
 
             await _context.Categories.ReplaceOneAsync(x => x.Id == id, category);

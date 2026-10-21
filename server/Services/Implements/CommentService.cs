@@ -17,7 +17,7 @@ namespace server.Services.Implements
         private readonly ILogger<CommentService> _logger = logger;
         private readonly IPostService _postService = postService;
 
-        // create / reply
+        // create / reply cho post
         public async Task<CommentDTO> CreateCommentPostAsync(Guid postId, CreateCommentDTO dTO)
         {
             var comment = new Comment

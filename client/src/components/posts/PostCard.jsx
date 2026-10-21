@@ -1,100 +1,127 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Eye, Heart, Lock, Star } from "lucide-react";
 
-const PostCard = ({ post, variant = "default" }) => {
-  // variant: "default" | "featured" | "row" | "topic"
-  if (variant === "topic") {
-    return (
-      <Link
-        to={`/posts?category=${post.slug}`}
-        className="group relative aspect-[4/3] overflow-hidden rounded-xl block"
-      >
-        <img
-          src={post.image}
-          alt={post.title}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <h4 className="font-bold text-lg">{post.title}</h4>
-          {post.description && (
-            <p className="text-sm text-white/80 mt-0.5">{post.description}</p>
-          )}
-        </div>
-      </Link>
-    );
-  }
+const formatDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("vi-VN");
+};
 
-  if (variant === "row") {
-    return (
-      <Link
-        to={`/post/${post.slug || post.id}`}
-        className="group flex gap-4 py-5 first:pt-0 last:pb-0"
-      >
-        <div className="w-28 h-20 shrink-0 overflow-hidden rounded-lg bg-muted">
-          <img
-            src={post.coverImage}
-            alt={post.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
-            {post.category}
-          </p>
-          <h4 className="font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2">
-            {post.title}
-          </h4>
-          <p className="text-xs text-muted-foreground mt-1.5">
-            {post.author} · {post.publishedAt}
-          </p>
-        </div>
-      </Link>
-    );
-  }
-
-  // default + featured
-  const isFeatured = variant === "featured";
-
+const PostBadges = ({ post }) => {
+  if (!post.isHightLight && !post.isPrivate) return null;
   return (
-    <Link to={`/posts/${post.slug || post.id}`} className="group block">
-      <div
-        className={`overflow-hidden bg-muted mb-4 ${
-          isFeatured ? "aspect-[16/10] rounded-xl" : "aspect-[16/10] rounded-lg"
-        }`}
-      >
-        <img
-          src={post.coverImage}
-          alt={post.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      </div>
-
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-        {post.category}
-      </p>
-
-      <h3
-        className={`font-bold leading-tight group-hover:text-primary transition-colors ${
-          isFeatured ? "text-2xl md:text-3xl mb-3" : "text-base mb-2"
-        }`}
-      >
-        {post.title}
-      </h3>
-
-      {post.excerpt && (
-        <p className="text-muted-foreground leading-relaxed mb-3 line-clamp-2 text-sm md:text-base">
-          {post.excerpt}
-        </p>
+    <div className="flex flex-wrap gap-1.5">
+      {post.isHightLight && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+          <Star className="h-3 w-3 fill-white" />
+          Nổi bật
+        </span>
       )}
-
-      <p className="text-sm text-muted-foreground">
-        {post.author}
-        {post.publishedAt && ` · ${post.publishedAt}`}
-        {post.readTime && ` · ${post.readTime}`}
-      </p>
-    </Link>
+      {post.isPrivate && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-zinc-700 px-2 py-0.5 text-[11px] font-semibold text-white">
+          <Lock className="h-3 w-3" />
+          Riêng tư
+        </span>
+      )}
+    </div>
   );
 };
 
-export default PostCard;
+const PostMeta = ({ post, className = "" }) => (
+  <p
+    className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground ${className}`}
+  >
+    {post.authorName && (
+      <span className="font-medium text-foreground/80">{post.authorName}</span>
+    )}
+    {post.publicDate && <span>{formatDate(post.publicDate)}</span>}
+    <span className="inline-flex items-center gap-1">
+      <Eye className="h-3.5 w-3.5" />
+      {post.viewCount ?? 0}
+    </span>
+    <span className="inline-flex items-center gap-1">
+      <Heart className="h-3.5 w-3.5" />
+      {post.likeCount ?? 0}
+    </span>
+  </p>
+);
+
+export default function PostCard({ post, variant = "row" }) {
+  if (!post) return null;
+  const href = `/post/${post.id}`;
+
+  // ===== Card lớn (bài hero ở giữa mục Nổi bật hôm nay) =====
+  if (variant === "featured") {
+    return (
+      <Link to={href} className="group block">
+        <div className="relative overflow-hidden rounded-xl border">
+          {post.thumbnailUrl ? (
+            <img
+              src={post.thumbnailUrl}
+              alt={post.title}
+              className="aspect-[16/9] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="aspect-[16/9] w-full bg-muted" />
+          )}
+          <div className="absolute left-3 top-3">
+            <PostBadges post={post} />
+          </div>
+        </div>
+        <h3 className="mt-3 text-xl font-bold leading-snug transition-colors group-hover:text-primary line-clamp-2 md:text-2xl">
+          {post.title}
+        </h3>
+        <PostMeta post={post} className="mt-2 text-sm" />
+      </Link>
+    );
+  }
+
+  // ===== Card dọc (dùng cho lưới bài viết nếu cần) =====
+  if (variant === "card") {
+    return (
+      <Link to={href} className="group block">
+        <div className="relative overflow-hidden rounded-xl border">
+          {post.thumbnailUrl ? (
+            <img
+              src={post.thumbnailUrl}
+              alt={post.title}
+              className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="aspect-video w-full bg-muted" />
+          )}
+          <div className="absolute left-3 top-3">
+            <PostBadges post={post} />
+          </div>
+        </div>
+        <h3 className="mt-3 font-semibold leading-snug transition-colors group-hover:text-primary line-clamp-2">
+          {post.title}
+        </h3>
+        <PostMeta post={post} className="mt-1.5 text-xs" />
+      </Link>
+    );
+  }
+
+  // ===== Dạng hàng ngang (list theo chủ đề) =====
+  return (
+    <Link to={href} className="group flex gap-4 py-4">
+      {post.thumbnailUrl ? (
+        <img
+          src={post.thumbnailUrl}
+          alt={post.title}
+          className="aspect-[4/3] w-36 shrink-0 rounded-lg border object-cover md:w-44"
+        />
+      ) : (
+        <div className="aspect-[4/3] w-36 shrink-0 rounded-lg border bg-muted md:w-44" />
+      )}
+      <div className="min-w-0 flex-1">
+        <PostBadges post={post} />
+        <h3 className="mt-1 font-semibold leading-snug transition-colors group-hover:text-primary line-clamp-2">
+          {post.title}
+        </h3>
+        <PostMeta post={post} className="mt-1.5 text-xs" />
+      </div>
+    </Link>
+  );
+}
