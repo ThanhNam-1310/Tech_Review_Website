@@ -1,3 +1,4 @@
+import Footer from "@/components/common/Footer";
 import Header from "@/components/header/Header";
 import HomePage from "@/pages/HomePage";
 import React from "react";
@@ -11,6 +12,9 @@ const MainLayout = () => {
       <main className="flex-1">
         <Outlet />
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
