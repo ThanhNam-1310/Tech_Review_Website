@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Cpu, LayoutDashboard, LogOut, Menu } from "lucide-react";
 import { getMe, logout } from "@/apis/auth.api";
 
@@ -13,9 +14,17 @@ const NAV_ITEMS = [
 const navClass = ({ isActive }) =>
   `rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
     isActive
-      ? "bg-white font-semibold text-orange-600 shadow-md"
-      : "text-zinc-500 hover:bg-orange-50 hover:text-orange-600 md:text-white/85 md:hover:bg-white/15 md:hover:text-white"
+      ? "bg-orange-500 font-semibold text-white shadow-md shadow-orange-500/25"
+      : "text-zinc-600 hover:bg-white/70 hover:text-orange-600"
   }`;
+
+const initials = (name) =>
+  (name || "?")
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -52,6 +61,7 @@ export default function Header() {
 
   const isLoggedIn = Boolean(user);
   const displayName = user?.fullName ?? user?.userName ?? user?.name ?? "";
+  const avatarUrl = user?.avatarUrl ?? user?.AvatarUrl ?? "";
   const roleName = (user?.roleName ?? user?.RoleName ?? "").toLowerCase();
   const isExpert = roleName === "expert";
   const isAdmin = roleName === "admin";
@@ -83,15 +93,23 @@ export default function Header() {
 
   const authArea = (onNavigate) =>
     checking ? null : isLoggedIn ? (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-8">
         <Link
           to="/profile"
           onClick={onNavigate}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-orange-600 md:text-white/85 md:hover:text-white"
+          className="flex items-center gap-2 text-sm font-medium text-zinc-600 transition-colors hover:text-orange-600 group"
         >
-          Xin chào,{" "}
-          <span className="font-semibold text-orange-600 md:text-white">
-            {displayName}
+          <Avatar className="size-8 ring-2 ring-orange-200">
+            <AvatarImage src={avatarUrl || undefined} alt={displayName} />
+            <AvatarFallback className="bg-orange-100 text-xs font-semibold text-orange-700">
+              {initials(displayName)}
+            </AvatarFallback>
+          </Avatar>
+          <span>
+            Xin chào,{" "}
+            <span className="font-semibold text-orange-600 group-hover:text-black">
+              {displayName}
+            </span>
           </span>
         </Link>
         {isAdmin ? (
@@ -99,7 +117,7 @@ export default function Header() {
           <Button
             size="sm"
             asChild
-            className="bg-white text-orange-600 shadow-sm ring-1 ring-orange-200 hover:bg-orange-50"
+            className="bg-orange-500 text-white shadow-sm shadow-orange-500/25 hover:bg-orange-600"
           >
             <Link to="/admin" onClick={onNavigate}>
               <LayoutDashboard className="mr-1 h-4 w-4" />
@@ -111,7 +129,7 @@ export default function Header() {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="hover:bg-orange-50 hover:text-orange-600 md:text-white/90 md:hover:bg-white/15 md:hover:text-white"
+            className="border border-orange-300 text-zinc-700 hover:border-orange-400 hover:bg-white/70 hover:text-orange-600"
           >
             <LogOut className="mr-1 h-4 w-4" />
             Đăng xuất
@@ -123,7 +141,7 @@ export default function Header() {
         <Button
           size="sm"
           asChild
-          className="bg-white text-orange-600 shadow-sm ring-1 ring-orange-200 hover:bg-orange-50"
+          className="bg-orange-500 text-white shadow-sm shadow-orange-500/25 hover:bg-orange-600"
         >
           <Link to="/login" onClick={onNavigate}>
             Đăng nhập
@@ -133,14 +151,14 @@ export default function Header() {
     );
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 text-white shadow-md">
+    <header className="sticky top-0 z-50 border-b border-orange-100 bg-gradient-to-r from-amber-50 via-orange-50 to-orange-100 text-zinc-800 shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-white text-orange-600 shadow-md">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/25">
             <Cpu className="size-5" />
           </span>
-          <span className="text-lg font-bold text-white">
-            Tech<span className="text-zinc-900">Review</span>
+          <span className="text-lg font-bold text-zinc-900">
+            Tech<span className="text-orange-500">Review</span>
           </span>
         </Link>
 
@@ -155,7 +173,7 @@ export default function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/15 hover:text-white"
+                className="text-zinc-700 hover:bg-white/70 hover:text-orange-600"
               >
                 <Menu className="h-5 w-5" />
               </Button>
