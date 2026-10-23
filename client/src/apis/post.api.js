@@ -62,3 +62,11 @@ export const UploadPostContentImage = (file, id) => {
 
     return api.post(`post/${id}/upload/content-image`, formData)
 }
+
+export const GetPostRecommendations = (id, limit = 10) => {
+    return api.get(`post/${id}/recommendations`, { params: { limit } })
+}
+
+export const GetPostsByAuthor = (authorId, params) => {
+    return api.get(`post/author/${authorId}`, { params })
+}

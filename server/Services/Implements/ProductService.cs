@@ -86,17 +86,18 @@ namespace server.Services.Implements
             var result = _mapper.Map<ProductDTO>(product);
 
             // Lấy các specification mẫu theo CategoryId của product
-            var specifications = await _context.Specifications
-                .Find(s => s.CategoryId == product.CategoryId)
-                .ToListAsync();
+            var specifications = await _specication.GetByCategoryIdAsync(product.CategoryId);
+
+            // Value mà product đã lưu khi tạo, tra theo SpecificationId
+            var valueById = product.Specifications.ToDictionary(s => s.SpecificationId, s => s.Value);
 
             // Trả về danh sách specification, chưa cần value
             result.Specifications = specifications
                 .Select(s => new Product_SpecificationDTO
                 {
                     SpecificationId = s.Id,
-                    Name = s.Name,
-                    Value = string.Empty
+                    Name = s.Name ?? string.Empty,
+                    Value = valueById.TryGetValue(s.Id, out var value) ? value : string.Empty
                 })
                 .ToList();
 
@@ -116,10 +117,10 @@ namespace server.Services.Implements
 
             var specIds = dto.Specifications.Select(s => s.SpecificationId).ToList();
 
-            var validSpecCount = await _context.Specifications.Find(s => s.CategoryId == dto.CategoryId && specIds.Contains(s.Id))
-                .CountDocumentsAsync();
+            var validSpecIds = (await _specication.GetByCategoryIdAsync(dto.CategoryId)).Select(s => s.Id).ToList();
 
-            if (validSpecCount != specIds.Distinct().Count()) throw new Exception("Invalid specifications");
+            if (dto.Specifications.Any(s => !validSpecIds.Contains(s.SpecificationId)))
+                throw new Exception("Invalid specifications");
 
             var product = new Product
             {
@@ -418,6 +419,43 @@ namespace server.Services.Implements
 
             // query
             IQueryable<Product> query = _context.Products.AsQueryable().Where(p => p.CreatedById == _currentUser.UserId);
+
+            // Tìm kiếm không dấu — cùng cơ chế SearchText như list thường
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                var keyword = TextSearch.NormalizeForSearch(request.Search);
+                query = query.Where(p => p.SearchText.Contains(keyword));
+            }
+
+            // Sắp xếp
+            var asc = string.Equals(request.SortOrder, "asc", StringComparison.OrdinalIgnoreCase);
+            query = (request.SortBy ?? string.Empty).ToLower() switch
+            {
+                "price" => asc ? query.OrderBy(p => p.Price) : query.OrderByDescending(p => p.Price),
+                "name" => asc ? query.OrderBy(p => p.Name) : query.OrderByDescending(p => p.Name),
+                _ => asc ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt),
+            };
+
+            var totalCount = await query.CountAsync();
+            var products = await query
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return new PageResult<ListProductDTO>
+            {
+                Items = _mapper.Map<List<ListProductDTO>>(products),
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+            };
+        }
+
+        public async Task<PageResult<ListProductDTO>> GetProductsByUserAsync(Guid userId, PageRequest request)
+        {
+            // query — chỉ lấy sản phẩm đang hiện của người này
+            IQueryable<Product> query = _context.Products.AsQueryable()
+                .Where(p => p.CreatedById == userId && !p.IsDeleted);
 
             // Tìm kiếm không dấu — cùng cơ chế SearchText như list thường
             if (!string.IsNullOrWhiteSpace(request.Search))

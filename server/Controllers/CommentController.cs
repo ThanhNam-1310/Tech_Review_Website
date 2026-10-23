@@ -17,6 +17,13 @@ namespace server.Controllers
             return Ok(result);
         }
 
+        [HttpGet("product/{productId}/sentiment-stats")]
+        public async Task<IActionResult> GetProductSentimentStats(Guid productId)
+        {
+            var stats = await _comment.GetProductSentimentStatsAsync(productId);
+            return Ok(stats);
+        }
+
         [HttpGet("product/{id:guid}")]
         public async Task<IActionResult> GetAllCommentProduct(Guid id)
         {

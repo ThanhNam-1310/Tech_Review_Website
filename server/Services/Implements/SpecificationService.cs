@@ -54,9 +54,15 @@ namespace server.Services.Implements
 
         public async Task<IEnumerable<SpecificationDTO>> GetByCategoryIdAsync(Guid categoryId)
         {
-            var specification = await _context.Specifications.Find(s => s.CategoryId == categoryId).ToListAsync();
+            var specs = await _context.Specifications.Find(s => s.CategoryId == categoryId).ToListAsync();
 
-            return _mapper.Map<IEnumerable<SpecificationDTO>>(specification);
+            if (specs.Count > 0)
+                return _mapper.Map<IEnumerable<SpecificationDTO>>(specs);
+
+            var category = await _context.Categories.Find(c => c.Id == categoryId).FirstOrDefaultAsync();
+            return category?.ParentId == null
+                ? Enumerable.Empty<SpecificationDTO>()
+                : await GetByCategoryIdAsync(category.ParentId.Value);
         }
 
         // update

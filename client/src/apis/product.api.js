@@ -1,7 +1,7 @@
 import api from "./api";
 
-export const GetAllProduct = () => {
-    return api.get("product/all")
+export const GetAllProduct = (params) => {
+    return api.get("product/all", {params})
 }
 
 export const GetAllProductOfCategory = (cateId) => {
@@ -33,7 +33,7 @@ export const RestoreSoftDelProduct = (id) => {
 }
 
 export const DeleteProductById = (id) => {
-    return api.delete("product/delete", { params: { id } })
+    return api.delete(`product/delete/${id}`)
 }
 
 // rating product
@@ -57,4 +57,12 @@ export const UploadProductImages = (file, id) => {
     formData.append("file", file);
 
     return api.post(`product/${id}/upload/image`, formData)
+}
+
+export const GetProductRecommendations = (id, limit = 10) => {
+    return api.get(`product/${id}/recommendations`, { params: { limit } })
+}
+
+export const GetProductsByUser = (userId, params) => {
+    return api.get(`product/user/${userId}`, { params })
 }

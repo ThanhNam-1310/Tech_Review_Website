@@ -11,6 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CompareProductsDialog from "./CompareProductsDialog";
+import { BarChart3 } from "lucide-react";
+import SentimentStatsDialog from "./SentimentStatsDialog";
 
 export default function ProductInfo({ product }) {
   // Gộp thumbnail + images, bỏ trùng
@@ -22,6 +24,7 @@ export default function ProductInfo({ product }) {
   const images = uniqueImages.length > 0 ? uniqueImages : ["/placeholder.png"];
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [sentimentOpen, setSentimentOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const timerRef = useRef(null);
 
@@ -149,6 +152,14 @@ export default function ProductInfo({ product }) {
             <ArrowLeftRight className="mr-2 h-4 w-4" />
             So sánh sản phẩm
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSentimentOpen(true)}
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Thống kê cảm xúc
+          </Button>
         </div>
 
         <p className="text-muted-foreground leading-relaxed mb-8">
@@ -181,6 +192,13 @@ export default function ProductInfo({ product }) {
         open={compareOpen}
         onOpenChange={setCompareOpen}
         productA={product}
+      />
+
+      <SentimentStatsDialog
+        open={sentimentOpen}
+        onOpenChange={setSentimentOpen}
+        productId={product.id}
+        productName={product.name}
       />
     </div>
   );

@@ -112,7 +112,11 @@ const AdminLayout = () => {
               <div className="hidden h-8 w-px bg-border sm:block" />
 
               {/* Thông tin admin */}
-              <div className="flex items-center gap-2.5">
+              <Link
+                to="/profile"
+                title="Xem hồ sơ cá nhân"
+                className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-muted"
+              >
                 <Avatar className="size-9 ring-2 ring-orange-100 dark:ring-orange-950">
                   <AvatarImage src={avatarUrl || undefined} alt={displayName} />
                   <AvatarFallback className="bg-orange-100 text-xs font-semibold text-orange-700 dark:bg-orange-950 dark:text-orange-400">
@@ -125,7 +129,7 @@ const AdminLayout = () => {
                   </p>
                   <p className="text-xs text-muted-foreground">Quản trị viên</p>
                 </div>
-              </div>
+              </Link>
             </div>
           </header>
 

@@ -90,6 +90,19 @@ try
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<ICommentService, CommentService>();
     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+    //builder.Services.AddScoped<IRecommendationService, RecommendationService>(); 
+
+    // service AI 
+    builder.Services.AddHttpClient<MlCommentService>(client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["MlApi:BaseUrl"]!);
+        client.Timeout = TimeSpan.FromSeconds(2);
+    });
+    builder.Services.AddHttpClient<IRecommendationService, RecommendationService>(client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["MlApi:BaseUrl"]!);
+        client.Timeout = TimeSpan.FromSeconds(5);
+    });
 
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
     builder.Services.AddScoped<IPermissionService, PermissionService>();

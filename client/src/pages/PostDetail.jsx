@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Comments from "@/components/common/Comment";
 import { GetDetailPostById } from "@/apis/post.api";
+import Recommendations from "@/components/common/Recommendations";
 
 // PostContentType ở BE: Image = 1, Text = 2
 const CONTENT_TYPE = { Image: 1, Text: 2 };
@@ -184,6 +185,9 @@ export default function PostDetail() {
         <div className="mx-auto max-w-3xl">
           <Comments type="post" targetId={id} />
         </div>
+
+        <Separator className="mx-auto my-10 max-w-3xl md:my-14" />
+        <Recommendations type="post" id={id} title="Bài viết liên quan" />
       </div>
     </div>
   );

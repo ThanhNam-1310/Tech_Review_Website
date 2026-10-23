@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import ProductInfo from "@/components/products/ProductInfo";
 import Comments from "@/components/common/Comment";
 import { GetDetailProductById } from "@/apis/product.api";
+import Recommendations from "@/components/common/Recommendations";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -76,6 +77,8 @@ export default function ProductDetail() {
         ) : product ? (
           <>
             <ProductInfo product={product} />
+            <Separator className="my-10 md:my-14" />
+            <Recommendations type="product" id={id} />
             <Separator className="my-10 md:my-14" />
             <Comments type="product" targetId={id} />
           </>

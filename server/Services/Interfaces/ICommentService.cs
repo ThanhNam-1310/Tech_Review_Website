@@ -30,5 +30,7 @@ namespace server.Services.Interfaces
         
         // hiện bình luận (dành cho admin)
         Task UnHiddenCommentAsync(Guid commentId);
+
+        Task<CommentSentimentStatsDTO> GetProductSentimentStatsAsync(Guid productId);
     }
 }

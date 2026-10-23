@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using server.Common.Exceptions;
 using server.Common.Pagination;
 using server.Common.Pagination.Query;
+using server.Dtos.Gioi_Thieu_Items;
 using server.Dtos.Posts;
 using server.Services.Implements;
 using server.Services.Interfaces;
@@ -13,9 +14,10 @@ namespace server.Controllers
 {
     [Route("api/post")]
     [ApiController]
-    public class PostController(IPostService post) : ControllerBase
+    public class PostController(IPostService post, IRecommendationService recommendationService) : ControllerBase
     {
         private readonly IPostService _post = post;
+        private readonly IRecommendationService _recommendationService = recommendationService;
 
         // GET: api/post/all?pageNumber=1&pageSize=10&search=iphone
         [HttpGet("all")]
@@ -32,6 +34,23 @@ namespace server.Controllers
             Guid id, [FromQuery] PageRequest request)
         {
             var result = await _post.GetPostByCategoryIdAsync(id, request);
+            return Ok(result);
+        }
+
+        [HttpGet("{id:guid}/recommendations")]
+        public async Task<IActionResult> GetRecommendations(Guid id, [FromQuery] int limit = 10)
+        {
+            if (limit < 1 || limit > 20)
+                return BadRequest("Limit must be between 1 and 20.");
+
+            var result = await _recommendationService.GetRecommendationsAsync(
+                new GioiThieuDTO
+                {
+                    ItemType = "post",
+                    ItemId = id,
+                    Limit = limit
+                });
+
             return Ok(result);
         }
 
@@ -57,6 +76,13 @@ namespace server.Controllers
         public async Task<IActionResult> GetMyPosts([FromQuery] PageRequest request)
         {
             var result = await _post.GetPostByAuthorIdAsync(GetCurrentUserId(), request);
+            return Ok(result);
+        }
+
+        [HttpGet("author/{authorId:guid}")]
+        public async Task<IActionResult> GetPostsByAuthor(Guid authorId, [FromQuery] PageRequest request)
+        {
+            var result = await _post.GetPostByAuthorIdAsync(authorId, request);
             return Ok(result);
         }
 

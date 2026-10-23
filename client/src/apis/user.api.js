@@ -26,7 +26,7 @@ export const UpdateAvatarUser = (id, file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    return api.patch(`user/${id}/avatar`)
+    return api.patch(`user/${id}/avatar`, formData)
 }
 
 export const DeleteUser = (id) => {

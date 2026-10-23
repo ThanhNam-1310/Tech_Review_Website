@@ -15,6 +15,10 @@ namespace server.Services.Interfaces
         // lấy danh sách sản phẩm mà user đã tạo
         Task<PageResult<ListProductDTO>> GetMyProductsAsync(PageRequest request);
 
+
+        // lấy danh sách sản phẩm của 1 user bất kỳ với id
+        Task<PageResult<ListProductDTO>> GetProductsByUserAsync(Guid userId, PageRequest request);
+
         // Chi tiết sản phẩm
         Task<ProductDTO> GetProductByIdAsync(Guid id);
 

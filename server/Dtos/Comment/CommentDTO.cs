@@ -9,6 +9,7 @@
         public string UserAvatarUrl { get; set; } = string.Empty;
         public Guid? ParentCommentId { get; set; }
         public string CommentContent { get; set; } = string.Empty;
+        public string? SentimentLabel { get; set; }
         public bool IsHidden { get; set; }
         // comment con
         public List<CommentDTO> Replies { get; set; } = [];

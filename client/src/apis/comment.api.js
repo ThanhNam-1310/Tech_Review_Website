@@ -23,3 +23,8 @@ export const UpdateCommentById = (id, comment) => {
 export const DeleteCommentById = (id) => {
     return api.delete(`comment/delete/${id}`)
 }
+
+export const GetProductSentimentStats = async (productId) => {
+  const response = await api.get(`comment/product/${productId}/sentiment-stats`);
+  return response.data;
+};

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using server.Common.Pagination;
+using server.Dtos.Gioi_Thieu_Items;
 using server.Dtos.Products;
 using server.Services.Implements;
 using server.Services.Interfaces;
@@ -9,9 +10,10 @@ namespace server.Controllers
 {
     [Route("api/product")]
     [ApiController]
-    public class ProductController(IProductService product) : ControllerBase
+    public class ProductController(IProductService product, IRecommendationService recommendationService) : ControllerBase
     {
         private readonly IProductService _product = product;
+        private readonly IRecommendationService _recommendationService = recommendationService;
 
         // GET: api/product/all?pageNumber=1&pageSize=10&search=iphone
         [HttpGet("all")]
@@ -41,6 +43,23 @@ namespace server.Controllers
             return Ok(result);
         }
 
+        [HttpGet("{id:guid}/recommendations")]
+        public async Task<IActionResult> GetRecommendations(Guid id, [FromQuery] int limit = 10)
+        {
+            if (limit < 1 || limit > 20)
+                return BadRequest("Limit must be between 1 and 20.");
+
+            var result = await _recommendationService.GetRecommendationsAsync(
+                new GioiThieuDTO
+                {
+                    ItemType = "product",
+                    ItemId = id,
+                    Limit = limit
+                });
+
+            return Ok(result);
+        }
+
         // GET: api/product/{id}
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetProductById(Guid id)
@@ -48,6 +67,15 @@ namespace server.Controllers
             var result = await _product.GetProductByIdAsync(id);
             return Ok(result);
         }
+
+        // GET: api/product/user/{userId}
+        [HttpGet("user/{userId:guid}")]
+        public async Task<IActionResult> GetProductsByUser(Guid userId, [FromQuery] PageRequest request)
+        {
+            var result = await _product.GetProductsByUserAsync(userId, request);
+            return Ok(result);
+        }
+
 
         // POST: api/product/create
         [HttpPost("create")]

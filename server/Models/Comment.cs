@@ -18,6 +18,8 @@ namespace server.Models
         // nội dung comment
         public string CommentContent { get; set; } = string.Empty;
 
+        public string? SentimentLabel { get; set; }
+
         // trạng thái ẩn của comment
         public bool IsHidden { get; set; } = false;
     }
