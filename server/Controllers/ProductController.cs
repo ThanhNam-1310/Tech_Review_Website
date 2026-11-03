@@ -157,12 +157,5 @@ namespace server.Controllers
             return Ok();
         }
 
-        // POST: api/product/{id}/share
-        [HttpPost("{id:guid}/share")]
-        public async Task<IActionResult> SharedProduct(Guid id)
-        {
-            await _product.IncreaseSharedCountAsync(id);
-            return Ok();
-        }
     }
 }

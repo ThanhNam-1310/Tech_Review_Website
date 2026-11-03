@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Eye, Heart, Lock, Star } from "lucide-react";
+//import { getCategoryStyle } from "./categoryColors";
+import { getCategoryStyle } from "@/utils/constants/categoryColors";
 
 const formatDate = (iso) => {
   if (!iso) return "";
@@ -50,11 +52,17 @@ const PostMeta = ({ post, className = "" }) => (
 export default function PostCard({ post, variant = "row" }) {
   if (!post) return null;
   const href = `/post/${post.id}`;
+  const cat = getCategoryStyle(
+    post.categoryId ?? post.categoryName ?? post.category,
+  );
 
   // ===== Card lớn (bài hero ở giữa mục Nổi bật hôm nay) =====
   if (variant === "featured") {
     return (
-      <Link to={href} className="group block">
+      <Link
+        to={href}
+        className={`group block rounded-2xl border ${cat.bg} ${cat.border} p-4`}
+      >
         <div className="relative overflow-hidden rounded-xl border">
           {post.thumbnailUrl ? (
             <img
@@ -69,7 +77,7 @@ export default function PostCard({ post, variant = "row" }) {
             <PostBadges post={post} />
           </div>
         </div>
-        <h3 className="mt-3 text-xl font-bold leading-snug transition-colors group-hover:text-primary line-clamp-2 md:text-2xl">
+        <h3 className="mt-3 text-xl font-bold leading-snug transition-colors group-hover:text-orange-600 line-clamp-2 md:text-2xl">
           {post.title}
         </h3>
         <PostMeta post={post} className="mt-2 text-sm" />
@@ -80,7 +88,10 @@ export default function PostCard({ post, variant = "row" }) {
   // ===== Card dọc (dùng cho lưới bài viết nếu cần) =====
   if (variant === "card") {
     return (
-      <Link to={href} className="group block">
+      <Link
+        to={href}
+        className={`group block rounded-2xl border ${cat.bg} ${cat.border} p-3`}
+      >
         <div className="relative overflow-hidden rounded-xl border">
           {post.thumbnailUrl ? (
             <img
@@ -95,7 +106,7 @@ export default function PostCard({ post, variant = "row" }) {
             <PostBadges post={post} />
           </div>
         </div>
-        <h3 className="mt-3 font-semibold leading-snug transition-colors group-hover:text-primary line-clamp-2">
+        <h3 className="mt-3 font-semibold leading-snug transition-colors group-hover:text-orange-600 line-clamp-2">
           {post.title}
         </h3>
         <PostMeta post={post} className="mt-1.5 text-xs" />
@@ -105,7 +116,10 @@ export default function PostCard({ post, variant = "row" }) {
 
   // ===== Dạng hàng ngang (list theo chủ đề) =====
   return (
-    <Link to={href} className="group flex gap-4 py-4">
+    <Link
+      to={href}
+      className={`group flex gap-4 rounded-xl border ${cat.bg} ${cat.border} px-4 py-4`}
+    >
       {post.thumbnailUrl ? (
         <img
           src={post.thumbnailUrl}
@@ -117,7 +131,7 @@ export default function PostCard({ post, variant = "row" }) {
       )}
       <div className="min-w-0 flex-1">
         <PostBadges post={post} />
-        <h3 className="mt-1 font-semibold leading-snug transition-colors group-hover:text-primary line-clamp-2">
+        <h3 className="mt-1 font-semibold leading-snug transition-colors group-hover:text-orange-600 line-clamp-2">
           {post.title}
         </h3>
         <PostMeta post={post} className="mt-1.5 text-xs" />

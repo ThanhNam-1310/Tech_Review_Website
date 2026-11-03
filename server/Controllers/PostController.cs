@@ -161,13 +161,6 @@ namespace server.Controllers
             return Ok();
         }
 
-        // POST: api/post/{id}/share
-        [HttpPost("{id:guid}/share")]
-        public async Task<IActionResult> SharedPost(Guid id)
-        {
-            await _post.IncreaseSharedCountAsync(id);
-            return Ok();
-        }
 
         // Lấy id của user đang đăng nhập từ JWT
         private Guid GetCurrentUserId()

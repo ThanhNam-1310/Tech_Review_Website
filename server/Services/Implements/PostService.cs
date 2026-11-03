@@ -445,15 +445,6 @@ namespace server.Services.Implements
                 p => p.Id == postId, update);
         }
 
-        // Tăng lượt chia sẻ
-        public async Task IncreaseSharedCountAsync(Guid postId)
-        {
-            var update = Builders<Post>.Update
-                .Inc(p => p.Rating.SharedCount, 1);
-
-            await _context.Posts.UpdateOneAsync(
-                p => p.Id == postId, update);
-        }
 
         // Tăng số bình luận
         public async Task TangCommentAsync(Guid postId)

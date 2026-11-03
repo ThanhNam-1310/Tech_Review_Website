@@ -11,7 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  X,
+  Package,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   UploadThumbnailProduct,
@@ -32,10 +38,14 @@ const flattenCategories = (list, level = 0) =>
     ...flattenCategories(cat.children || [], level + 1),
   ]);
 
+// Style dùng chung cho input — chỉ là className, không động vào logic
+const inputCls =
+  "rounded-xl border-orange-100 bg-white focus-visible:border-orange-300 focus-visible:ring-orange-400";
+
 const Field = ({ label, children }) => (
   <div>
-    <label className="text-sm font-medium">{label}</label>
-    <div className="mt-1">{children}</div>
+    <label className="text-sm font-medium text-zinc-700">{label}</label>
+    <div className="mt-1.5">{children}</div>
   </div>
 );
 
@@ -252,7 +262,7 @@ const CreateProductForm = ({
     <form
       onSubmit={handleSubmit}
       className={
-        embedded ? "space-y-4" : "mx-auto max-w-6xl space-y-4 p-4 md:p-6"
+        embedded ? "space-y-4" : "mx-auto max-w-6xl space-y-5 p-4 md:p-6"
       }
     >
       {/* Hàng trên: nút quay lại + tiêu đề — chỉ hiện ở dạng page */}
@@ -262,12 +272,16 @@ const CreateProductForm = ({
             type="button"
             variant="outline"
             size="sm"
+            className="rounded-xl border-orange-200 text-orange-700 hover:bg-orange-50 hover:text-orange-700"
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Quay lại
           </Button>
-          <h1 className="text-lg font-semibold">
+          <h1 className="flex items-center gap-2 text-xl font-bold text-zinc-900">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-sm shadow-orange-500/25">
+              <Package className="h-4 w-4" />
+            </span>
             {isEdit ? "Chỉnh sửa sản phẩm" : "Tạo sản phẩm"}
           </h1>
         </div>
@@ -275,17 +289,35 @@ const CreateProductForm = ({
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         {/* ===== Cột trái: thông tin cơ bản ===== */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Thông tin cơ bản</CardTitle>
+        <Card className="overflow-hidden rounded-2xl border-orange-100 shadow-lg shadow-orange-500/10">
+          <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-400" />
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                <Package className="h-4 w-4" />
+              </span>
+              Thông tin cơ bản
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-2">
             <Field label="Tên sản phẩm">
-              <Input value={form.name} onChange={set("name")} required />
+              <Input
+                value={form.name}
+                onChange={set("name")}
+                required
+                placeholder="VD: Laptop Gaming XYZ..."
+                className={inputCls}
+              />
             </Field>
 
             <Field label="Thương hiệu">
-              <Input value={form.brand} onChange={set("brand")} required />
+              <Input
+                value={form.brand}
+                onChange={set("brand")}
+                required
+                placeholder="VD: ASUS, MSI..."
+                className={inputCls}
+              />
             </Field>
 
             <Field label="Danh mục">
@@ -293,7 +325,7 @@ const CreateProductForm = ({
                 value={form.categoryId}
                 onValueChange={(v) => setForm((f) => ({ ...f, categoryId: v }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className={inputCls}>
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
                 <SelectContent>
@@ -313,6 +345,8 @@ const CreateProductForm = ({
                 min="0"
                 value={form.price}
                 onChange={set("price")}
+                placeholder="VD: 25000000"
+                className={inputCls}
               />
             </Field>
 
@@ -320,21 +354,24 @@ const CreateProductForm = ({
               <Textarea
                 value={form.description}
                 onChange={set("description")}
+                placeholder="Mô tả ngắn về sản phẩm..."
+                rows={3}
+                className={inputCls}
               />
             </Field>
 
             <Field label="Thumbnail">
               {thumb ? (
-                <div className="relative w-28 h-28">
+                <div className="relative h-28 w-28">
                   <img
                     src={thumb.preview}
                     alt="thumbnail"
-                    className="w-full h-full object-cover rounded border"
+                    className="h-full w-full rounded-xl border border-orange-100 object-cover shadow-sm"
                   />
                   <button
                     type="button"
                     onClick={removeThumb}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                    className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-red-100 bg-white text-red-500 shadow-md transition-colors hover:bg-red-500 hover:text-white"
                   >
                     <X size={12} />
                   </button>
@@ -344,6 +381,7 @@ const CreateProductForm = ({
                   type="file"
                   accept="image/*"
                   onChange={(e) => pickFile(e, false)}
+                  className="cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200"
                 />
               )}
             </Field>
@@ -354,20 +392,21 @@ const CreateProductForm = ({
                 accept="image/*"
                 multiple
                 onChange={(e) => pickFile(e, true)}
+                className="cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200"
               />
               {images.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {images.map(({ preview }, i) => (
-                    <div key={preview} className="relative w-20 h-20">
+                    <div key={preview} className="relative h-20 w-20">
                       <img
                         src={preview}
                         alt={`img-${i}`}
-                        className="w-full h-full object-cover rounded border"
+                        className="h-full w-full rounded-xl border border-orange-100 object-cover shadow-sm"
                       />
                       <button
                         type="button"
                         onClick={() => removeImage(i)}
-                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-red-100 bg-white text-red-500 shadow-md transition-colors hover:bg-red-500 hover:text-white"
                       >
                         <X size={12} />
                       </button>
@@ -380,34 +419,45 @@ const CreateProductForm = ({
         </Card>
 
         {/* ===== Cột phải: specifications ===== */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Thông số kỹ thuật</CardTitle>
+        <Card className="overflow-hidden rounded-2xl border-orange-100 shadow-lg shadow-orange-500/10">
+          <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-400" />
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                <SlidersHorizontal className="h-4 w-4" />
+              </span>
+              Thông số kỹ thuật
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {!form.categoryId ? (
-              <p className="text-sm text-muted-foreground">
-                Chọn danh mục ở cột trái để nhập thông số kỹ thuật.
-              </p>
+              <div className="rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50/40 p-6 text-center">
+                <SlidersHorizontal className="mx-auto h-6 w-6 text-orange-300" />
+                <p className="mt-2 text-sm text-zinc-600">
+                  Chọn danh mục ở cột trái để nhập thông số kỹ thuật.
+                </p>
+              </div>
             ) : loadingSpecs ? (
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="animate-spin" size={16} />
+              <div className="flex items-center justify-center gap-2 rounded-2xl border border-orange-100 bg-orange-50/40 p-6 text-sm text-zinc-600">
+                <Loader2 className="animate-spin text-orange-500" size={16} />
                 Đang tải thông số...
-              </p>
+              </div>
             ) : specTemplates.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <div className="rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50/40 p-6 text-center text-sm text-zinc-600">
                 Danh mục này chưa có thông số mẫu.
-              </p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {specTemplates.map((t) => (
                   <div
                     key={idOf(t)}
-                    className="grid grid-cols-3 items-center gap-2"
+                    className="grid grid-cols-3 items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/40 px-3 py-2"
                   >
-                    <span className="text-sm">{nameOf(t)}</span>
+                    <span className="text-sm font-medium text-zinc-700">
+                      {nameOf(t)}
+                    </span>
                     <Input
-                      className="col-span-2"
+                      className={`col-span-2 ${inputCls}`}
                       placeholder={`Nhập ${nameOf(t)}`}
                       value={specValues[idOf(t)] ?? ""}
                       onChange={(e) =>
@@ -428,11 +478,20 @@ const CreateProductForm = ({
       {/* Hàng dưới: nút hành động */}
       <div className="flex justify-end gap-2">
         {embedded && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="rounded-xl"
+          >
             Hủy
           </Button>
         )}
-        <Button type="submit" disabled={submitting} className="px-8">
+        <Button
+          type="submit"
+          disabled={submitting}
+          className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-8 font-semibold text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600"
+        >
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {submitting ? "Đang xử lý..." : isEdit ? "Cập nhật" : "Tạo sản phẩm"}
         </Button>

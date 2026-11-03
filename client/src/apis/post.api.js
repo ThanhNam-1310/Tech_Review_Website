@@ -38,7 +38,7 @@ export const DeletePostById = (id) => {
 
 // rating post
 export const GetRatingViewPost = (id) => {
-    return api.get(`post/${id}/view`)
+    return api.post(`post/${id}/view`)
 }
 
 export const ActionLikePost = (id) => {

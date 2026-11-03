@@ -110,30 +110,6 @@ export default function ProductInfo({ product }) {
           {product.name}
         </h1>
 
-        {/* Rating stats */}
-        <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Heart className="h-4 w-4" />
-            <span>{rating.likeCount ?? 0}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Eye className="h-4 w-4" />
-            <span>{rating.viewCount ?? 0}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <MessageCircle className="h-4 w-4" />
-            <span>{rating.commentCount ?? 0}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Bookmark className="h-4 w-4" />
-            <span>{rating.savedCount ?? 0}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Share2 className="h-4 w-4" />
-            <span>{rating.sharedCount ?? 0}</span>
-          </div>
-        </div>
-
         <p className="text-sm text-muted-foreground mb-4">
           Ngày tạo: {formatDate(product.createdDate)}
         </p>

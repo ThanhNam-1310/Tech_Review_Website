@@ -31,6 +31,9 @@ import {
   ArrowUp,
   ArrowDown,
   ImageOff,
+  Newspaper,
+  AlignLeft,
+  PenLine,
 } from "lucide-react";
 
 // ===== Enum phía BE (đã đối chiếu) =====
@@ -61,6 +64,24 @@ const normalizeOption = (o) => ({
     o.id ?? o.Id ?? o.productId ?? o.ProductId ?? o.categoryId ?? o.CategoryId,
   name: o.name ?? o.Name ?? "",
 });
+
+// Style dùng chung cho input — chỉ là className, không động vào logic
+const inputCls =
+  "rounded-xl border-orange-100 bg-white focus-visible:border-orange-300 focus-visible:ring-orange-400";
+
+const labelCls = "text-sm font-medium text-zinc-700";
+
+// Tiêu đề từng nhóm field — component trình bày thuần túy
+const SectionTitle = ({ icon: Icon, children }) => (
+  <div className="flex items-center gap-2">
+    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+      <Icon className="h-4 w-4" />
+    </span>
+    <h4 className="text-sm font-semibold uppercase tracking-wide text-zinc-700">
+      {children}
+    </h4>
+  </div>
+);
 
 // Dùng 2 kiểu:
 // - Page: <PostForm /> ở /post/new và /post/edit/:id (id lấy từ route)
@@ -286,123 +307,149 @@ const PostForm = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
       </div>
     );
   }
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <Label>Tiêu đề *</Label>
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="VD: Đánh giá Laptop 2026..."
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* ===== Thông tin bài viết ===== */}
+      <div className="space-y-4">
+        <SectionTitle icon={Newspaper}>Thông tin bài viết</SectionTitle>
 
-      <div className="space-y-2">
-        <Label>Mô tả ngắn</Label>
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Tóm tắt nội dung bài viết..."
-          rows={3}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label>Chủ đề</Label>
-          <Select
-            value={categoryId || NONE}
-            onValueChange={(v) => setCategoryId(v === NONE ? "" : v)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Không chọn" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>Không chọn</SelectItem>
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
+          <Label className={labelCls}>Tiêu đề *</Label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="VD: Đánh giá Laptop 2026..."
+            className={inputCls}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className={labelCls}>Mô tả ngắn</Label>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Tóm tắt nội dung bài viết..."
+            rows={3}
+            className={inputCls}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label className={labelCls}>Chủ đề</Label>
+            <Select
+              value={categoryId || NONE}
+              onValueChange={(v) => setCategoryId(v === NONE ? "" : v)}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue placeholder="Không chọn" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>Không chọn</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className={labelCls}>Sản phẩm</Label>
+            <Select
+              value={productId || NONE}
+              onValueChange={(v) => setProductId(v === NONE ? "" : v)}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue placeholder="Không chọn" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>Không chọn</SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className={labelCls}>Hiển thị</Label>
+            <Select
+              value={String(visibility)}
+              onValueChange={(v) => setVisibility(Number(v))}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={String(VISIBILITY.PostPublic)}>
+                  Công khai
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Sản phẩm</Label>
-          <Select
-            value={productId || NONE}
-            onValueChange={(v) => setProductId(v === NONE ? "" : v)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Không chọn" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>Không chọn</SelectItem>
-              {products.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
+                <SelectItem value={String(VISIBILITY.PostPrivate)}>
+                  Riêng tư
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Hiển thị</Label>
-          <Select
-            value={String(visibility)}
-            onValueChange={(v) => setVisibility(Number(v))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={String(VISIBILITY.PostPublic)}>
-                Công khai
-              </SelectItem>
-              <SelectItem value={String(VISIBILITY.PostPrivate)}>
-                Riêng tư
-              </SelectItem>
-            </SelectContent>
-          </Select>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>Ảnh đại diện (thumbnail)</Label>
-        <div className="flex items-start gap-4">
+      {/* ===== Ảnh đại diện ===== */}
+      <div className="space-y-3">
+        <SectionTitle icon={ImagePlus}>Ảnh đại diện</SectionTitle>
+        <div className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50/40 p-4 sm:flex-row sm:items-center">
           {thumbnailPreview ? (
             <img
               src={thumbnailPreview}
               alt=""
-              className="w-40 h-24 object-cover rounded border"
+              className="h-24 w-40 shrink-0 rounded-xl border border-orange-100 object-cover shadow-sm"
             />
           ) : (
-            <div className="w-40 h-24 rounded border bg-muted flex items-center justify-center">
-              <ImageOff className="h-5 w-5 text-muted-foreground" />
+            <div className="flex h-24 w-40 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white">
+              <ImageOff className="h-5 w-5 text-orange-300" />
             </div>
           )}
-          <Input
-            type="file"
-            accept="image/*"
-            className="max-w-xs"
-            onChange={(e) => handleThumbnail(e.target.files?.[0])}
-          />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-zinc-700">
+              Chọn ảnh đại diện cho bài viết
+            </p>
+            <p className="text-xs text-zinc-500">
+              Ảnh sẽ được tải lên sau khi bài viết được tạo.
+            </p>
+            <Input
+              type="file"
+              accept="image/*"
+              className="max-w-xs cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200"
+              onChange={(e) => handleThumbnail(e.target.files?.[0])}
+            />
+          </div>
         </div>
       </div>
 
+      {/* ===== Nội dung bài viết ===== */}
       <div className="space-y-3">
-        <Label>Nội dung bài viết</Label>
+        <SectionTitle icon={AlignLeft}>Nội dung bài viết</SectionTitle>
         {blocks.map((b, i) => (
-          <div key={b.key} className="rounded-lg border p-3 space-y-2">
+          <div
+            key={b.key}
+            className="space-y-3 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm"
+          >
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">
+              <Badge
+                className={
+                  b.kind === "image"
+                    ? "bg-violet-100 text-violet-700 hover:bg-violet-100"
+                    : "bg-sky-100 text-sky-700 hover:bg-sky-100"
+                }
+              >
                 {b.kind === "image" ? "Ảnh" : "Đoạn văn"}
               </Badge>
               <div className="flex-1" />
@@ -410,6 +457,7 @@ const PostForm = ({
                 type="button"
                 size="icon"
                 variant="ghost"
+                className="rounded-lg hover:bg-orange-50 hover:text-orange-600"
                 onClick={() => moveBlock(i, -1)}
                 disabled={i === 0}
               >
@@ -419,6 +467,7 @@ const PostForm = ({
                 type="button"
                 size="icon"
                 variant="ghost"
+                className="rounded-lg hover:bg-orange-50 hover:text-orange-600"
                 onClick={() => moveBlock(i, 1)}
                 disabled={i === blocks.length - 1}
               >
@@ -428,9 +477,10 @@ const PostForm = ({
                 type="button"
                 size="icon"
                 variant="ghost"
+                className="rounded-lg hover:bg-red-50 hover:text-red-600"
                 onClick={() => removeBlock(b.key)}
               >
-                <Trash2 className="h-4 w-4 text-destructive" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
 
@@ -440,24 +490,25 @@ const PostForm = ({
                 onChange={(e) => patchBlock(b.key, { value: e.target.value })}
                 placeholder="Nhập nội dung đoạn văn..."
                 rows={4}
+                className={inputCls}
               />
             ) : (
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col gap-3 rounded-xl bg-orange-50/40 p-3 sm:flex-row sm:items-center">
                 {b.preview ? (
                   <img
                     src={b.preview}
                     alt=""
-                    className="w-40 h-24 object-cover rounded border"
+                    className="h-24 w-40 shrink-0 rounded-xl border border-orange-100 object-cover shadow-sm"
                   />
                 ) : (
-                  <div className="w-40 h-24 rounded border bg-muted flex items-center justify-center">
-                    <ImageOff className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex h-24 w-40 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white">
+                    <ImageOff className="h-5 w-5 text-orange-300" />
                   </div>
                 )}
                 <Input
                   type="file"
                   accept="image/*"
-                  className="max-w-xs"
+                  className="max-w-xs cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200"
                   onChange={(e) => handleBlockImage(b.key, e.target.files?.[0])}
                 />
               </div>
@@ -470,6 +521,7 @@ const PostForm = ({
             type="button"
             variant="outline"
             size="sm"
+            className="rounded-xl border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-700"
             onClick={() => setBlocks((prev) => [...prev, newTextBlock()])}
           >
             <Type className="h-4 w-4 mr-1" /> Thêm đoạn văn
@@ -478,6 +530,7 @@ const PostForm = ({
             type="button"
             variant="outline"
             size="sm"
+            className="rounded-xl border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-700"
             onClick={() => setBlocks((prev) => [...prev, newImageBlock()])}
           >
             <ImagePlus className="h-4 w-4 mr-1" /> Thêm ảnh
@@ -489,11 +542,16 @@ const PostForm = ({
         <Button
           type="button"
           variant="outline"
+          className="rounded-xl"
           onClick={() => (embedded ? onCancel() : navigate(-1))}
         >
           Huỷ
         </Button>
-        <Button type="submit" disabled={saving}>
+        <Button
+          type="submit"
+          disabled={saving}
+          className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 font-semibold text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600"
+        >
           {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
           {isEdit ? "Lưu thay đổi" : "Tạo bài viết"}
         </Button>
@@ -506,13 +564,17 @@ const PostForm = ({
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
+      <Card className="overflow-hidden rounded-2xl border-orange-100 shadow-lg shadow-orange-500/10">
+        <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-400" />
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-sm shadow-orange-500/25">
+              <PenLine className="h-4 w-4" />
+            </span>
             {isEdit ? "Sửa bài viết" : "Tạo bài viết mới"}
           </CardTitle>
         </CardHeader>
-        <CardContent>{formContent}</CardContent>
+        <CardContent className="pt-4">{formContent}</CardContent>
       </Card>
     </div>
   );

@@ -383,15 +383,7 @@ namespace server.Services.Implements
                 p => p.Id == productId && !p.IsDeleted, update);
         }
 
-        // Tăng lượt chia sẻ
-        public async Task IncreaseSharedCountAsync(Guid productId)
-        {
-            var update = Builders<Product>.Update
-                .Inc(p => p.Rating.SharedCount, 1);
 
-            await _context.Products.UpdateOneAsync(
-                p => p.Id == productId && !p.IsDeleted, update);
-        }
 
         // Tăng số bình luận
         public async Task TangCommentAsync(Guid productId)

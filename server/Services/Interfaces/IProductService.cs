@@ -45,7 +45,6 @@ namespace server.Services.Interfaces
         Task IncreaseViewCountAsync(Guid productId);
         Task TangLikeCountAsync(Guid productId);
         Task GiamLikeCountAsync(Guid productId);
-        Task IncreaseSharedCountAsync(Guid productId);
         Task TangCommentAsync(Guid productId);
         Task GiamCommentAsync(Guid productId);
     }
