@@ -22,5 +22,8 @@ namespace server.Models
 
         // trạng thái ẩn của comment
         public bool IsHidden { get; set; } = false;
+        // id các user like comment
+        public List<Guid> LikeByUserIds { get; set; } = [];
+
     }
 }

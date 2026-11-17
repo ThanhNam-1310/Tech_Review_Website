@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using server.Common.Constants;
+using server.Common.Enums;
 using server.Common.Exceptions;
 using server.Common.Helper;
 using server.Common.Pagination;
@@ -66,14 +68,58 @@ namespace server.Services.Implements
             var page = await PaginationExtension.PageResultAsync(
                 query, request);
 
+            var products = page.Items.ToList();
+            var items = _mapper.Map<List<ListProductDTO>>(products);
+
+            // Số bình luận đếm trực tiếp cho cả trang trong 1 query
+            var commentCounts = await GetCommentCountsAsync(products.Select(p => p.Id));
+            var expertIds = await GetExpertCreatedProductIdsAsync(products);
+            for (var i = 0; i < items.Count; i++)
+            {
+                items[i].CommentCount = commentCounts.GetValueOrDefault(products[i].Id, 0);
+                items[i].IsCreatedByExpert = expertIds.Contains(products[i].Id);
+            }
+
+
             return new PageResult<ListProductDTO>
             {
-                Items = _mapper.Map<List<ListProductDTO>>(page.Items),
+                Items = items,
                 TotalCount = page.TotalCount,
                 PageNumber = page.PageNumber,
                 PageSize = page.PageSize
             };
         }
+
+        // Đếm bình luận cho 1 danh sách product trong 1 query, loại bình luận đã ẩn
+        private async Task<Dictionary<Guid, int>> GetCommentCountsAsync(IEnumerable<Guid> productIds)
+        {
+            var ids = productIds.ToList();
+            if (ids.Count == 0) return new Dictionary<Guid, int>();
+
+            var grouped = await _context.Comments.Aggregate()
+                .Match(c => ids.Contains(c.TargetId)
+                    && c.TargetType == TargetType.Product && !c.IsHidden)
+                .Group(c => c.TargetId, g => new { ProductId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return grouped.ToDictionary(x => x.ProductId, x => x.Count);
+        }
+
+        // Id của các product do chuyên gia tạo trong 1 trang, để gắn badge
+        private async Task<HashSet<Guid>> GetExpertCreatedProductIdsAsync(List<Product> products)
+        {
+            var creatorIds = products.Select(p => p.CreatedById).Distinct().ToList();
+            if (creatorIds.Count == 0) return [];
+
+            var expertCreatorIds = await _context.Users
+                .Find(u => creatorIds.Contains(u.Id) && u.RoleId == RoleSeedConstant.ExpertRoleId)
+                .Project(u => u.Id)
+                .ToListAsync();
+            var expertSet = expertCreatorIds.ToHashSet();
+
+            return products.Where(p => expertSet.Contains(p.CreatedById)).Select(p => p.Id).ToHashSet();
+        }
+
 
         // Lấy chi tiết sản phẩm
         public async Task<ProductDTO> GetProductByIdAsync(Guid id)
@@ -84,6 +130,15 @@ namespace server.Services.Implements
                 ?? throw new NotFoundExcception("Product not found");
 
             var result = _mapper.Map<ProductDTO>(product);
+
+            // Số bình luận đếm trực tiếp, luôn đúng và loại bình luận đã ẩn
+            if (result.Rating != null)
+                result.Rating.CommentCount = (int)await _context.Comments.CountDocumentsAsync(
+                    c => c.TargetId == id && c.TargetType == TargetType.Product && !c.IsHidden);
+
+            // Badge "Chuyên gia bình chọn": người tạo có role expert không
+            var expertIds = await GetExpertCreatedProductIdsAsync([product]);
+            result.IsCreatedByExpert = expertIds.Contains(product.Id);
 
             // Lấy các specification mẫu theo CategoryId của product
             var specifications = await _specication.GetByCategoryIdAsync(product.CategoryId);
@@ -127,6 +182,7 @@ namespace server.Services.Implements
                 Name = dto.Name,
                 Description = dto.Description,
                 Brand = dto.Brand,
+                SearchText = TextSearch.NormalizeForSearch(dto.Name + " " + (dto.Description ?? string.Empty) + " " + dto.Brand),
                 CategoryId = dto.CategoryId,
                 CreatedById = _currentUser.UserId,
                 Price = dto.Price,
@@ -182,7 +238,7 @@ namespace server.Services.Implements
                     _mapper.Map<List<Product_Specification>>(
                         dto.Specifications);
             }
-
+            product.SearchText = TextSearch.NormalizeForSearch(product.Name + " " + (product.Description ?? string.Empty) + " " + product.Brand);
             product.UpdatedAt = DateTime.UtcNow;
 
             await _context.Products.ReplaceOneAsync(
@@ -353,58 +409,6 @@ namespace server.Services.Implements
             return imageUrl;
         }
 
-        // Tăng lượt xem
-        public async Task IncreaseViewCountAsync(Guid productId)
-        {
-            var update = Builders<Product>.Update
-                .Inc(p => p.Rating.ViewCount, 1);
-
-            await _context.Products.UpdateOneAsync(
-                p => p.Id == productId && !p.IsDeleted, update);
-        }
-
-        // Tăng lượt thích
-        public async Task TangLikeCountAsync(Guid productId)
-        {
-            var update = Builders<Product>.Update
-                .Inc(p => p.Rating.LikeCount, 1);
-
-            await _context.Products.UpdateOneAsync(
-                p => p.Id == productId && !p.IsDeleted, update);
-        }
-
-        // Giảm lượt thích
-        public async Task GiamLikeCountAsync(Guid productId)
-        {
-            var update = Builders<Product>.Update
-                .Inc(p => p.Rating.LikeCount, -1);
-
-            await _context.Products.UpdateOneAsync(
-                p => p.Id == productId && !p.IsDeleted, update);
-        }
-
-
-
-        // Tăng số bình luận
-        public async Task TangCommentAsync(Guid productId)
-        {
-            var update = Builders<Product>.Update
-                .Inc(p => p.Rating.CommentCount, 1);
-
-            await _context.Products.UpdateOneAsync(
-                p => p.Id == productId && !p.IsDeleted, update);
-        }
-
-        // Giảm số bình luận
-        public async Task GiamCommentAsync(Guid productId)
-        {
-            var update = Builders<Product>.Update
-                .Inc(p => p.Rating.CommentCount, -1);
-
-            await _context.Products.UpdateOneAsync(
-                p => p.Id == productId && !p.IsDeleted, update);
-        }
-
         public async Task<PageResult<ListProductDTO>> GetMyProductsAsync(PageRequest request)
         {
             if (!_currentUser.IsAuthen) throw new ForbiddenException("You need to log in to view your products.");
@@ -434,9 +438,21 @@ namespace server.Services.Implements
                 .Take(request.PageSize)
                 .ToListAsync();
 
+            var items = _mapper.Map<List<ListProductDTO>>(products);
+
+            // Số bình luận đếm trực tiếp cho cả trang trong 1 query
+            var commentCounts = await GetCommentCountsAsync(products.Select(p => p.Id));
+            var expertIds = await GetExpertCreatedProductIdsAsync(products);
+            for (var i = 0; i < items.Count; i++)
+            {
+                items[i].CommentCount = commentCounts.GetValueOrDefault(products[i].Id, 0);
+                items[i].IsCreatedByExpert = expertIds.Contains(products[i].Id);
+            }
+
+
             return new PageResult<ListProductDTO>
             {
-                Items = _mapper.Map<List<ListProductDTO>>(products),
+                Items = items,
                 TotalCount = totalCount,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
@@ -471,9 +487,21 @@ namespace server.Services.Implements
                 .Take(request.PageSize)
                 .ToListAsync();
 
+            var items = _mapper.Map<List<ListProductDTO>>(products);
+
+            // Số bình luận đếm trực tiếp cho cả trang trong 1 query
+            var commentCounts = await GetCommentCountsAsync(products.Select(p => p.Id));
+            var expertIds = await GetExpertCreatedProductIdsAsync(products);
+            for (var i = 0; i < items.Count; i++)
+            {
+                items[i].CommentCount = commentCounts.GetValueOrDefault(products[i].Id, 0);
+                items[i].IsCreatedByExpert = expertIds.Contains(products[i].Id);
+            }
+
+
             return new PageResult<ListProductDTO>
             {
-                Items = _mapper.Map<List<ListProductDTO>>(products),
+                Items = items,
                 TotalCount = totalCount,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,

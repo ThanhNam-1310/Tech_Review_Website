@@ -8,6 +8,7 @@ import {
   Trash2,
   Loader2,
   LayoutGrid,
+  TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -85,6 +86,9 @@ const subtreeIds = (node, set = new Set()) => {
   (node.children || []).forEach((c) => subtreeIds(c, set));
   return set;
 };
+
+const headClass =
+  "text-xs font-semibold uppercase tracking-wider text-slate-500";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -190,14 +194,14 @@ export default function AdminCategoriesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-950/40">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm shadow-emerald-600/20">
             <LayoutGrid className="size-5" />
           </span>
           <div>
             <h1 className="text-2xl font-bold leading-tight">
               Danh mục sản phẩm
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-500">
               Tổng cộng {flat.length} danh mục
             </p>
           </div>
@@ -206,18 +210,21 @@ export default function AdminCategoriesPage() {
           onClick={() =>
             setForm({ id: null, name: "", parentId: null, isActive: true })
           }
+          className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-md shadow-emerald-600/20 hover:from-emerald-600 hover:to-emerald-700"
         >
           <Plus className="mr-2 size-4" /> Thêm danh mục
         </Button>
       </div>
 
-      <div className="rounded-xl border shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Tên danh mục</TableHead>
-              <TableHead className="w-40">Trạng thái</TableHead>
-              <TableHead className="w-36 text-right">Thao tác</TableHead>
+            <TableRow className="bg-emerald-50 hover:bg-emerald-50">
+              <TableHead className={headClass}>Tên danh mục</TableHead>
+              <TableHead className={`w-40 ${headClass}`}>Trạng thái</TableHead>
+              <TableHead className={`w-36 text-right ${headClass}`}>
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -226,7 +233,7 @@ export default function AdminCategoriesPage() {
               <TableRow>
                 <TableCell
                   colSpan={3}
-                  className="py-8 text-center text-muted-foreground"
+                  className="py-10 text-center text-slate-500"
                 >
                   Đang tải...
                 </TableCell>
@@ -235,14 +242,14 @@ export default function AdminCategoriesPage() {
               <TableRow>
                 <TableCell
                   colSpan={3}
-                  className="py-8 text-center text-muted-foreground"
+                  className="py-10 text-center text-slate-500"
                 >
                   Chưa có danh mục.
                 </TableCell>
               </TableRow>
             ) : (
               visible.map((cat) => (
-                <TableRow key={cat.id}>
+                <TableRow key={cat.id} className="hover:bg-emerald-50/50">
                   <TableCell>
                     <div
                       className="flex items-center gap-2"
@@ -252,7 +259,7 @@ export default function AdminCategoriesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 shrink-0 text-muted-foreground hover:text-orange-600"
+                          className="size-7 shrink-0 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-700"
                           onClick={() => toggleExpand(cat.id)}
                         >
                           {expanded.has(cat.id) ? (
@@ -266,15 +273,13 @@ export default function AdminCategoriesPage() {
                       )}
                       <span
                         className={
-                          cat.level === 0
-                            ? "font-semibold"
-                            : "text-muted-foreground"
+                          cat.level === 0 ? "font-semibold" : "text-slate-500"
                         }
                       >
                         {cat.name}
                       </span>
                       {cat.children?.length > 0 && (
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-100">
                           {cat.children.length} mục con
                         </span>
                       )}
@@ -283,12 +288,12 @@ export default function AdminCategoriesPage() {
 
                   <TableCell>
                     {cat.isActive ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
                         <span className="size-1.5 rounded-full bg-emerald-500" />
                         Hoạt động
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500 ring-1 ring-inset ring-zinc-200">
                         <span className="size-1.5 rounded-full bg-zinc-400" />
                         Đã tắt
                       </span>
@@ -301,7 +306,7 @@ export default function AdminCategoriesPage() {
                         variant="ghost"
                         size="icon"
                         title="Thêm danh mục con"
-                        className="hover:text-emerald-600"
+                        className="rounded-xl hover:bg-emerald-50 hover:text-emerald-700"
                         onClick={() =>
                           setForm({
                             id: null,
@@ -317,7 +322,7 @@ export default function AdminCategoriesPage() {
                         variant="ghost"
                         size="icon"
                         title="Sửa"
-                        className="hover:text-orange-600"
+                        className="rounded-xl hover:bg-emerald-50 hover:text-emerald-700"
                         onClick={() =>
                           setForm({
                             id: cat.id,
@@ -334,6 +339,7 @@ export default function AdminCategoriesPage() {
                         size="icon"
                         title="Xóa"
                         onClick={() => setDeleting(cat)}
+                        className="rounded-xl hover:bg-red-50"
                       >
                         <Trash2 className="size-4 text-destructive" />
                       </Button>
@@ -348,9 +354,12 @@ export default function AdminCategoriesPage() {
 
       {/* ===== Form tạo / sửa (inline) ===== */}
       <Dialog open={!!form} onOpenChange={(o) => !o && setForm(null)}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm shadow-emerald-600/20">
+                <LayoutGrid className="size-4" />
+              </span>
               {form?.id ? "Chỉnh sửa danh mục" : "Tạo danh mục"}
             </DialogTitle>
           </DialogHeader>
@@ -360,7 +369,7 @@ export default function AdminCategoriesPage() {
               <div>
                 <label className="text-sm font-medium">Tên danh mục</label>
                 <Input
-                  className="mt-1"
+                  className="mt-1 rounded-xl border-emerald-100 focus-visible:border-emerald-300 focus-visible:ring-emerald-400"
                   value={form.name}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, name: e.target.value }))
@@ -381,10 +390,15 @@ export default function AdminCategoriesPage() {
                     }))
                   }
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 rounded-xl border-emerald-100 focus:ring-emerald-400">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
                     <SelectItem value={ROOT}>
                       — Không có (danh mục gốc)
                     </SelectItem>
@@ -417,10 +431,15 @@ export default function AdminCategoriesPage() {
                   variant="outline"
                   onClick={() => setForm(null)}
                   disabled={submitting}
+                  className="rounded-xl"
                 >
                   Hủy
                 </Button>
-                <Button onClick={handleFormSubmit} disabled={submitting}>
+                <Button
+                  onClick={handleFormSubmit}
+                  disabled={submitting}
+                  className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-md shadow-emerald-600/20 hover:from-emerald-600 hover:to-emerald-700"
+                >
                   {submitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
@@ -437,9 +456,22 @@ export default function AdminCategoriesPage() {
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <span
+                className={`flex size-8 items-center justify-center rounded-lg ${
+                  hasChildren
+                    ? "bg-amber-100 text-amber-600"
+                    : "bg-red-100 text-red-600"
+                }`}
+              >
+                {hasChildren ? (
+                  <TriangleAlert className="size-4" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+              </span>
               {hasChildren ? "Không thể xóa" : "Xác nhận xóa"}
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -449,7 +481,10 @@ export default function AdminCategoriesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletingLoading}>
+            <AlertDialogCancel
+              disabled={deletingLoading}
+              className="rounded-xl"
+            >
               Hủy
             </AlertDialogCancel>
             {!hasChildren && (
@@ -457,6 +492,7 @@ export default function AdminCategoriesPage() {
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={deletingLoading}
+                className="rounded-xl"
               >
                 {deletingLoading ? "Đang xóa..." : "Xóa"}
               </Button>

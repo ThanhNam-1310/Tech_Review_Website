@@ -78,7 +78,8 @@ const formatPrice = (price) =>
 
 const StatCard = ({ icon: Icon, label, value, to, chipClass }) => (
   <Link to={to} className="group">
-    <Card className="h-full shadow-sm transition-shadow group-hover:shadow-md">
+    <Card className="h-full overflow-hidden rounded-2xl border-indigo-100 shadow-sm transition-all group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-md">
+      <div className="h-1 w-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-violet-500" />
       <CardContent className="flex items-center gap-4 p-5">
         <span
           className={`flex size-12 shrink-0 items-center justify-center rounded-2xl ${chipClass}`}
@@ -86,10 +87,12 @@ const StatCard = ({ icon: Icon, label, value, to, chipClass }) => (
           <Icon className="size-6" />
         </span>
         <div className="min-w-0">
-          <p className="text-2xl font-bold leading-tight">{value}</p>
+          <p className="text-2xl font-bold leading-tight tabular-nums">
+            {value}
+          </p>
           <p className="truncate text-sm text-muted-foreground">{label}</p>
         </div>
-        <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        <ArrowRight className="ml-auto size-4 shrink-0 text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100" />
       </CardContent>
     </Card>
   </Link>
@@ -99,10 +102,10 @@ const ListSkeleton = ({ rows = 3 }) => (
   <div className="space-y-3">
     {Array.from({ length: rows }).map((_, i) => (
       <div key={i} className="flex items-center gap-3">
-        <div className="h-12 w-16 shrink-0 animate-pulse rounded bg-muted" />
+        <div className="h-12 w-16 shrink-0 animate-pulse rounded-lg bg-indigo-100/60" />
         <div className="flex-1 space-y-2">
-          <div className="h-3.5 w-3/4 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="h-3.5 w-3/4 animate-pulse rounded bg-indigo-100/60" />
+          <div className="h-3 w-1/2 animate-pulse rounded bg-indigo-100/60" />
         </div>
       </div>
     ))}
@@ -189,9 +192,28 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Tổng quan hệ thống</h1>
-        <p className="mt-1 text-sm capitalize text-muted-foreground">{today}</p>
+      {/* ===== Banner tiêu đề: khác hẳn các trang trước ===== */}
+      <div className="flex flex-wrap items-end justify-between gap-4 overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-600 px-6 py-6 text-white shadow-sm sm:px-8">
+        <div>
+          <h1 className="text-2xl font-bold leading-tight">
+            Tổng quan hệ thống
+          </h1>
+          <p className="mt-1 text-sm capitalize text-indigo-100">{today}</p>
+        </div>
+        <div className="flex gap-3">
+          <div className="rounded-2xl bg-white/10 px-4 py-2.5 backdrop-blur">
+            <p className="text-xs text-indigo-100">Tổng tài khoản</p>
+            <p className="text-lg font-bold leading-tight tabular-nums">
+              {loading ? "…" : totalUsers}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/10 px-4 py-2.5 backdrop-blur">
+            <p className="text-xs text-indigo-100">Bài viết / Sản phẩm</p>
+            <p className="text-lg font-bold leading-tight tabular-nums">
+              {loading ? "…" : `${counts.posts} / ${counts.products}`}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* ===== Thẻ thống kê ===== */}
@@ -228,17 +250,17 @@ export default function AdminDashboardPage() {
 
       {/* ===== Bài viết + sản phẩm mới nhất ===== */}
       <div className="grid items-start gap-4 xl:grid-cols-5">
-        <Card className="shadow-sm xl:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="rounded-2xl border-indigo-100 shadow-sm xl:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-indigo-50 pb-3">
             <CardTitle className="text-base">Bài viết mới nhất</CardTitle>
             <Link
               to="/admin/posts"
-              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
             >
               Xem tất cả <ArrowRight className="size-3.5" />
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {loading ? (
               <ListSkeleton rows={4} />
             ) : latestPosts.length === 0 ? (
@@ -246,22 +268,25 @@ export default function AdminDashboardPage() {
                 Chưa có bài viết nào.
               </p>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y divide-indigo-50">
                 {latestPosts.map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 py-3">
+                  <div
+                    key={p.id}
+                    className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-indigo-50/50"
+                  >
                     {p.thumbnail ? (
                       <img
                         src={p.thumbnail}
                         alt=""
-                        className="h-12 w-16 shrink-0 rounded border object-cover"
+                        className="h-12 w-16 shrink-0 rounded-lg border border-indigo-100 object-cover"
                       />
                     ) : (
-                      <div className="h-12 w-16 shrink-0 rounded border bg-muted" />
+                      <div className="h-12 w-16 shrink-0 rounded-lg border border-indigo-100 bg-indigo-50" />
                     )}
                     <div className="min-w-0 flex-1">
                       <Link
                         to={`/post/${p.id}`}
-                        className="block truncate text-sm font-medium hover:underline"
+                        className="block truncate text-sm font-medium hover:text-indigo-600 hover:underline"
                       >
                         {p.title}
                       </Link>
@@ -283,17 +308,17 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm xl:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="rounded-2xl border-indigo-100 shadow-sm xl:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-indigo-50 pb-3">
             <CardTitle className="text-base">Sản phẩm mới nhất</CardTitle>
             <Link
               to="/admin/products"
-              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
             >
               Xem tất cả <ArrowRight className="size-3.5" />
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {loading ? (
               <ListSkeleton rows={4} />
             ) : latestProducts.length === 0 ? (
@@ -301,22 +326,25 @@ export default function AdminDashboardPage() {
                 Chưa có sản phẩm nào.
               </p>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y divide-indigo-50">
                 {latestProducts.map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 py-3">
+                  <div
+                    key={p.id}
+                    className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-indigo-50/50"
+                  >
                     {p.thumnailUrl ? (
                       <img
                         src={p.thumnailUrl}
                         alt=""
-                        className="size-12 shrink-0 rounded border object-cover"
+                        className="size-12 shrink-0 rounded-xl border border-indigo-100 object-cover"
                       />
                     ) : (
-                      <div className="size-12 shrink-0 rounded border bg-muted" />
+                      <div className="size-12 shrink-0 rounded-xl border border-indigo-100 bg-indigo-50" />
                     )}
                     <div className="min-w-0 flex-1">
                       <Link
                         to={`/products/${p.id}`}
-                        className="block truncate text-sm font-medium hover:underline"
+                        className="block truncate text-sm font-medium hover:text-indigo-600 hover:underline"
                       >
                         {p.name}
                       </Link>
@@ -324,7 +352,7 @@ export default function AdminDashboardPage() {
                         {p.brand || "—"}
                       </p>
                     </div>
-                    <span className="shrink-0 text-sm font-semibold text-primary">
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-indigo-700">
                       {formatPrice(p.price)}
                     </span>
                   </div>
@@ -337,11 +365,11 @@ export default function AdminDashboardPage() {
 
       {/* ===== Tài khoản theo vai trò + Hero hiện tại ===== */}
       <div className="grid items-start gap-4 xl:grid-cols-5">
-        <Card className="shadow-sm xl:col-span-2">
-          <CardHeader className="pb-3">
+        <Card className="rounded-2xl border-indigo-100 shadow-sm xl:col-span-2">
+          <CardHeader className="border-b border-indigo-50 pb-3">
             <CardTitle className="text-base">Tài khoản theo vai trò</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             {ROLE_ROWS.map((row) => {
               const count = counts[row.key];
               const pct = totalUsers
@@ -354,14 +382,14 @@ export default function AdminDashboardPage() {
                       <span className={`size-2 rounded-full ${row.bar}`} />
                       {row.label}
                     </span>
-                    <span className="font-semibold">
+                    <span className="font-semibold tabular-nums">
                       {loading ? "…" : count}
                       <span className="ml-1.5 text-xs font-normal text-muted-foreground">
                         {pct}%
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div className="h-2 overflow-hidden rounded-full bg-indigo-100/70">
                     <div
                       className={`h-full rounded-full transition-all ${row.bar}`}
                       style={{ width: `${pct}%` }}
@@ -372,27 +400,27 @@ export default function AdminDashboardPage() {
             })}
             <Link
               to="/admin/users"
-              className="flex items-center gap-1 pt-1 text-sm font-medium text-primary hover:underline"
+              className="flex items-center gap-1 pt-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
             >
               Quản lý tài khoản <ArrowRight className="size-3.5" />
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm xl:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <Card className="overflow-hidden rounded-2xl border-indigo-100 shadow-sm xl:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-indigo-50 pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Star className="size-4 text-yellow-500" />
+              <Star className="size-4 text-amber-500" />
               Bài viết chủ đề (Hero) hiện tại
             </CardTitle>
             <Link
               to="/admin/posts"
-              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
             >
               Thay đổi <ArrowRight className="size-3.5" />
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {loading ? (
               <ListSkeleton rows={1} />
             ) : hero ? (
@@ -401,26 +429,28 @@ export default function AdminDashboardPage() {
                   <img
                     src={hero.thumbnail}
                     alt=""
-                    className="h-20 w-32 shrink-0 rounded-lg border object-cover"
+                    className="h-20 w-32 shrink-0 rounded-xl border border-indigo-100 object-cover"
                   />
                 ) : (
-                  <div className="h-20 w-32 shrink-0 rounded-lg border bg-muted" />
+                  <div className="h-20 w-32 shrink-0 rounded-xl border border-indigo-100 bg-indigo-50" />
                 )}
                 <div className="min-w-0">
                   <Link
                     to={`/post/${hero.id}`}
-                    className="text-base font-semibold hover:underline"
+                    className="text-base font-semibold hover:text-indigo-600 hover:underline"
                   >
                     {hero.title}
                   </Link>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {hero.author || "—"} • {formatDate(hero.date)}
                   </p>
-                  <Badge className="mt-2">Đang hiển thị ở trang chủ</Badge>
+                  <Badge className="mt-2 bg-indigo-600 hover:bg-indigo-600">
+                    Đang hiển thị ở trang chủ
+                  </Badge>
                 </div>
               </div>
             ) : (
-              <p className="py-4 text-sm text-muted-foreground">
+              <p className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 py-4 text-center text-sm text-muted-foreground">
                 Chưa có bài viết chủ đề. Vào trang Bài viết để chọn 1 bài làm
                 hero.
               </p>
@@ -431,8 +461,8 @@ export default function AdminDashboardPage() {
 
       {loading && (
         <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Đang tải dữ liệu tổng
-          quan...
+          <Loader2 className="size-4 animate-spin text-indigo-500" /> Đang tải
+          dữ liệu tổng quan...
         </p>
       )}
     </div>

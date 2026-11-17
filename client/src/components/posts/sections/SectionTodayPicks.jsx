@@ -10,8 +10,8 @@ const SectionTodayPicks = ({ highlights = [], featured, favorites = [] }) => {
         <div className="lg:col-span-3">
           {/* Đường kẻ ngang chung + nhãn */}
           <div className="relative mb-6">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-orange-500 via-amber-400 to-transparent" />
-            <h3 className="relative inline-flex items-center gap-1.5 rounded-b-lg bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm shadow-orange-500/25">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-sky-500 via-teal-400 to-transparent" />
+            <h3 className="relative inline-flex items-center gap-1.5 rounded-b-lg bg-gradient-to-r from-sky-500 to-teal-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm shadow-sky-500/25">
               <Flame className="h-3.5 w-3.5" />
               Nổi bật hôm nay
             </h3>
@@ -19,8 +19,14 @@ const SectionTodayPicks = ({ highlights = [], featured, favorites = [] }) => {
 
           {/* 2 cột con: trái | giữa — khoảng cách đều, có kẻ dọc */}
           <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-0">
-            {/* Trái */}
-            <div className="lg:col-span-1 order-2 lg:order-1 lg:border-r lg:border-orange-100 lg:pr-6">
+            {/* Trái — chiếm hết chiều rộng khi chưa có bài nổi bật thật */}
+            <div
+              className={
+                featured
+                  ? "lg:col-span-1 order-2 lg:order-1 lg:border-r lg:border-sky-100 lg:pr-6"
+                  : "lg:col-span-3 order-2 lg:order-1"
+              }
+            >
               <ul className="space-y-4">
                 {highlights.map((item, index) => (
                   <li key={item.id}>
@@ -30,18 +36,20 @@ const SectionTodayPicks = ({ highlights = [], featured, favorites = [] }) => {
               </ul>
             </div>
 
-            {/* Giữa */}
-            <div className="lg:col-span-2 order-1 lg:order-2 lg:pl-6">
-              {featured && <PostCard post={featured} variant="featured" />}
-            </div>
+            {/* Giữa — chỉ hiện khi có bài nổi bật thật */}
+            {featured && (
+              <div className="lg:col-span-2 order-1 lg:order-2 lg:pl-6">
+                <PostCard post={featured} variant="featured" />
+              </div>
+            )}
           </div>
         </div>
 
         {/* ===== PHẢI ===== */}
-        <div className="lg:col-span-1 lg:border-l lg:border-orange-100 lg:pl-6">
+        <div className="lg:col-span-1 lg:border-l lg:border-sky-100 lg:pl-6">
           <div className="relative mb-6">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-orange-500 via-amber-400 to-transparent" />
-            <h3 className="relative inline-flex items-center gap-1.5 rounded-b-lg bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm shadow-orange-500/25">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-sky-500 via-teal-400 to-transparent" />
+            <h3 className="relative inline-flex items-center gap-1.5 rounded-b-lg bg-gradient-to-r from-sky-500 to-teal-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm shadow-sky-500/25">
               <Heart className="h-3.5 w-3.5" />
               Yêu thích
             </h3>

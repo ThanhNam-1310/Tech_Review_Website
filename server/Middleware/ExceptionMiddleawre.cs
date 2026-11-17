@@ -14,7 +14,7 @@ namespace server.Middleware
             {
                 await _next(context);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred.");
 
@@ -26,8 +26,12 @@ namespace server.Middleware
         {
             var statusCode = exception switch
             {
+                ForbiddenException => StatusCodes.Status403Forbidden,
                 BaseException appException =>
                     appException.StatusCode,
+
+                UnauthorizedAccessException =>
+                    StatusCodes.Status401Unauthorized,
 
                 _ => StatusCodes.Status500InternalServerError
             };

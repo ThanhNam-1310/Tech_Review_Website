@@ -6,5 +6,7 @@
         bool IsAdmin { get; }
         bool IsAuthen { get; }
         bool HasPermission(string permission);
+        string? IpAddress { get; }
+        string? UserAgent { get; }
     }
 }

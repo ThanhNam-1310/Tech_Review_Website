@@ -24,7 +24,23 @@ export const DeleteCommentById = (id) => {
     return api.delete(`comment/delete/${id}`)
 }
 
+export const ActionLikeComment = (commentId) => {
+    return api.post(`comment/${commentId}/like`)
+}
+
+export const ActionDisLikeComment = (commentId) => {
+    return api.delete(`comment/${commentId}/dislike`)
+}
+
 export const GetProductSentimentStats = async (productId) => {
   const response = await api.get(`comment/product/${productId}/sentiment-stats`);
   return response.data;
 };
+
+export const HideCommentById = (id) => {
+    return api.patch(`comment/hide/${id}`)
+}
+
+export const UnHideCommentById = (id) => {
+    return api.patch(`comment/unhide/${id}`)
+}

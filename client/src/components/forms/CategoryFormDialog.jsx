@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { categorySchema, validateSchema, errCls } from "@/validation/schemas";
 
 const CategoryFormDialog = ({
   open,
@@ -32,16 +33,28 @@ const CategoryFormDialog = ({
   const [parentId, setParentId] = useState(null);
   const [isActive, setIsActive] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const clearError = (field) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   useEffect(() => {
     if (!open) return;
     setName(initialData?.name ?? "");
     setParentId(initialData?.parentId ?? null);
     setIsActive(initialData?.isActive ?? true);
+    setErrors({});
   }, [open, initialData]);
 
   const handleSubmit = async () => {
-    if (!name.trim()) return;
+    const errs = await validateSchema(categorySchema, { name });
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
     setSubmitting(true);
     try {
@@ -83,10 +96,17 @@ const CategoryFormDialog = ({
               id="category-name"
               placeholder="Nhập tên danh mục..."
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                clearError("name");
+              }}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               autoFocus
+              className={errCls(errors.name)}
             />
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -129,7 +149,7 @@ const CategoryFormDialog = ({
           >
             Hủy
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting || !name.trim()}>
+          <Button onClick={handleSubmit} disabled={submitting}>
             {submitting
               ? "Đang lưu..."
               : mode === "create"

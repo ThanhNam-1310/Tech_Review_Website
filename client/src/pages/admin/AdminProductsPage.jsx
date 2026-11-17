@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Search,
   X,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,6 +81,9 @@ const formatPrice = (price) =>
         style: "currency",
         currency: "VND",
       }).format(Number(price));
+
+const headClass =
+  "text-xs font-semibold uppercase tracking-wider text-stone-500";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -179,16 +183,21 @@ export default function AdminProductsPage() {
     <div className="flex h-[calc(100vh-8rem)] min-h-0 flex-col gap-4 overflow-hidden">
       {/* ===== Tiêu đề + tìm kiếm + hành động ===== */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm shadow-amber-600/20">
+            <Package className="size-5" />
+          </span>
+          <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
+        </div>
         <div className="flex gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-500" />
             <Input
               placeholder="Tìm theo tên sản phẩm..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-64 pl-9 pr-9"
+              className="w-64 pl-9 pr-9 rounded-xl border-amber-100 bg-white focus-visible:border-amber-300 focus-visible:ring-amber-400"
             />
             {searchInput && (
               <button
@@ -198,23 +207,33 @@ export default function AdminProductsPage() {
                   setPage(1);
                   setActiveSearch("");
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-700"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-          <Button onClick={handleSearch}>Tìm kiếm</Button>
+          <Button
+            variant="outline"
+            onClick={handleSearch}
+            className="rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-700"
+          >
+            Tìm kiếm
+          </Button>
           <Button
             variant="outline"
             size="icon"
             onClick={fetchProducts}
             disabled={loading}
             title="Làm mới"
+            className="rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-700"
           >
             <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
           </Button>
-          <Button onClick={() => setFormDialog({ productId: null })}>
+          <Button
+            onClick={() => setFormDialog({ productId: null })}
+            className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 font-semibold text-white shadow-md shadow-amber-600/20 hover:from-amber-600 hover:to-amber-700"
+          >
             <Plus className="mr-2 size-4" />
             Thêm sản phẩm
           </Button>
@@ -222,18 +241,20 @@ export default function AdminProductsPage() {
       </div>
 
       {/* ===== Bảng sản phẩm ===== */}
-      <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
+      <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm">
         <div className="h-full overflow-y-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-background">
-              <TableRow>
-                <TableHead className="w-16">Ảnh</TableHead>
-                <TableHead>Tên</TableHead>
-                <TableHead>Thương hiệu</TableHead>
-                <TableHead>Danh mục</TableHead>
-                <TableHead>Giá</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+            <TableHeader className="sticky top-0 z-10 bg-amber-50">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className={`w-16 ${headClass}`}>Ảnh</TableHead>
+                <TableHead className={headClass}>Tên</TableHead>
+                <TableHead className={headClass}>Thương hiệu</TableHead>
+                <TableHead className={headClass}>Danh mục</TableHead>
+                <TableHead className={headClass}>Giá</TableHead>
+                <TableHead className={headClass}>Trạng thái</TableHead>
+                <TableHead className={`text-right ${headClass}`}>
+                  Thao tác
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -242,7 +263,7 @@ export default function AdminProductsPage() {
                 <TableRow>
                   <TableCell
                     colSpan={7}
-                    className="text-center text-muted-foreground"
+                    className="py-10 text-center text-stone-500"
                   >
                     Đang tải...
                   </TableCell>
@@ -251,7 +272,7 @@ export default function AdminProductsPage() {
                 <TableRow>
                   <TableCell
                     colSpan={7}
-                    className="text-center text-muted-foreground"
+                    className="py-10 text-center text-stone-500"
                   >
                     {activeSearch
                       ? `Không tìm thấy sản phẩm nào với "${activeSearch}".`
@@ -262,30 +283,46 @@ export default function AdminProductsPage() {
                 products.map((p) => (
                   <TableRow
                     key={p.id}
-                    className={p.isDeleted ? "opacity-50" : undefined}
+                    className={`hover:bg-amber-50/60 ${p.isDeleted ? "opacity-50" : ""}`}
                   >
                     <TableCell>
                       {p.thumnailUrl ? (
                         <img
                           src={p.thumnailUrl}
                           alt={p.name}
-                          className="size-10 rounded object-cover"
+                          className="size-12 rounded-xl object-cover shadow-sm ring-1 ring-amber-100"
                         />
                       ) : (
-                        <div className="size-10 rounded bg-muted" />
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-100">
+                          <Package className="size-5 text-amber-300" />
+                        </div>
                       )}
                     </TableCell>
-                    <TableCell className="max-w-[240px] truncate font-medium">
+                    <TableCell className="max-w-[240px] truncate font-semibold">
                       {p.name}
                     </TableCell>
-                    <TableCell>{p.brand || "—"}</TableCell>
-                    <TableCell>{categoryName(p.categoryId)}</TableCell>
-                    <TableCell>{formatPrice(p.price)}</TableCell>
+                    <TableCell className="text-stone-500">
+                      {p.brand || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-100">
+                        {categoryName(p.categoryId)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-semibold tabular-nums">
+                      {formatPrice(p.price)}
+                    </TableCell>
                     <TableCell>
                       {p.isDeleted ? (
-                        <Badge variant="outline">Đã ẩn</Badge>
+                        <Badge className="gap-1.5 bg-stone-100 text-stone-500 ring-1 ring-inset ring-stone-200 hover:bg-stone-100">
+                          <span className="size-1.5 rounded-full bg-stone-400" />
+                          Đã ẩn
+                        </Badge>
                       ) : (
-                        <Badge variant="secondary">Đang hiện</Badge>
+                        <Badge className="gap-1.5 bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200 hover:bg-amber-50">
+                          <span className="size-1.5 rounded-full bg-amber-500" />
+                          Đang hiện
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell>
@@ -295,6 +332,7 @@ export default function AdminProductsPage() {
                           size="icon"
                           title="Sửa"
                           onClick={() => setFormDialog({ productId: p.id })}
+                          className="rounded-xl hover:bg-amber-50 hover:text-amber-700"
                         >
                           <Pencil className="size-4" />
                         </Button>
@@ -304,6 +342,7 @@ export default function AdminProductsPage() {
                             size="icon"
                             title="Khôi phục"
                             onClick={() => handleRestore(p)}
+                            className="rounded-xl hover:bg-amber-50 hover:text-amber-700"
                           >
                             <RotateCcw className="size-4" />
                           </Button>
@@ -315,6 +354,7 @@ export default function AdminProductsPage() {
                             onClick={() =>
                               setConfirm({ product: p, hard: false })
                             }
+                            className="rounded-xl hover:bg-stone-100 hover:text-stone-700"
                           >
                             <Ban className="size-4" />
                           </Button>
@@ -324,6 +364,7 @@ export default function AdminProductsPage() {
                           size="icon"
                           title="Xóa vĩnh viễn"
                           onClick={() => setConfirm({ product: p, hard: true })}
+                          className="rounded-xl hover:bg-red-50"
                         >
                           <Trash2 className="size-4 text-destructive" />
                         </Button>
@@ -339,7 +380,7 @@ export default function AdminProductsPage() {
 
       {/* ===== Phân trang ===== */}
       <div className="flex shrink-0 flex-col items-center justify-between gap-2 sm:flex-row">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-stone-500">
           Hiển thị {start}–{end} trên tổng {totalCount} sản phẩm
         </p>
         <Pagination className="mx-0 w-auto">
@@ -348,7 +389,11 @@ export default function AdminProductsPage() {
               <PaginationPrevious
                 href="#"
                 aria-disabled={page === 1}
-                className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                className={
+                  page === 1
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-amber-50 hover:text-amber-700"
+                }
                 onClick={(e) => {
                   e.preventDefault();
                   if (page > 1) setPage(page - 1);
@@ -365,7 +410,9 @@ export default function AdminProductsPage() {
                 href="#"
                 aria-disabled={page === totalPages}
                 className={
-                  page === totalPages ? "pointer-events-none opacity-50" : ""
+                  page === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-amber-50 hover:text-amber-700"
                 }
                 onClick={(e) => {
                   e.preventDefault();
@@ -382,9 +429,12 @@ export default function AdminProductsPage() {
         open={!!formDialog}
         onOpenChange={(o) => !o && setFormDialog(null)}
       >
-        <DialogContent className="w-[96vw] max-w-6xl sm:max-w-6xl max-h-[92vh] overflow-y-auto">
+        <DialogContent className="w-[96vw] max-w-6xl sm:max-w-6xl max-h-[92vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm shadow-amber-600/20">
+                <Package className="size-4" />
+              </span>
               {formDialog?.productId ? "Chỉnh sửa sản phẩm" : "Tạo sản phẩm"}
             </DialogTitle>
           </DialogHeader>
@@ -407,9 +457,22 @@ export default function AdminProductsPage() {
         open={!!confirm}
         onOpenChange={(o) => !o && setConfirm(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <span
+                className={`flex size-8 items-center justify-center rounded-lg ${
+                  confirm?.hard
+                    ? "bg-red-100 text-red-600"
+                    : "bg-stone-100 text-stone-500"
+                }`}
+              >
+                {confirm?.hard ? (
+                  <Trash2 className="size-4" />
+                ) : (
+                  <Ban className="size-4" />
+                )}
+              </span>
               {confirm?.hard ? "Xóa vĩnh viễn" : "Ẩn sản phẩm"}
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -419,11 +482,14 @@ export default function AdminProductsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={confirmLoading}>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={confirmLoading} className="rounded-xl">
+              Hủy
+            </AlertDialogCancel>
             <Button
               variant="destructive"
               onClick={handleConfirm}
               disabled={confirmLoading}
+              className="rounded-xl"
             >
               {confirmLoading
                 ? "Đang xử lý..."

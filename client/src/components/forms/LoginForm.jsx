@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/card";
 
 import { LockKeyhole, User, Eye, EyeClosed } from "lucide-react";
-import { login } from "@/apis/auth.api";
+import { login, getMe, logout } from "@/apis/auth.api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { loginSchema, validateSchema, errCls } from "@/validation/schemas";
 
 const LoginForm = ({ onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -26,6 +27,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [passwordShow, setPasswordShow] = useState(false);
 
   const handleChange = (e) => {
@@ -35,6 +37,12 @@ const LoginForm = ({ onSwitchToRegister }) => {
       ...prev,
       [name]: value,
     }));
+    setFieldErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
   };
 
   const handleTogglePassword = () => {
@@ -52,6 +60,13 @@ const LoginForm = ({ onSwitchToRegister }) => {
     e.preventDefault();
 
     setError("");
+    const errs = await validateSchema(loginSchema, {
+      userName: formData.userName,
+      password: formData.password,
+    });
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setLoading(true);
 
     try {
@@ -59,6 +74,21 @@ const LoginForm = ({ onSwitchToRegister }) => {
         userName: formData.userName,
         password: formData.password,
       });
+
+      // Trang này chỉ dành cho user/expert: tài khoản admin phải đăng nhập ở trang quản trị
+      const meRes = await getMe();
+      const me = meRes.data?.data ?? meRes.data ?? {};
+      const role = (me.roleName ?? me.RoleName ?? "").toLowerCase();
+      if (role === "admin") {
+        await logout().catch(() => {});
+        const adminMessage =
+          "Tài khoản quản trị viên vui lòng đăng nhập tại trang quản trị.";
+        toast.error(adminMessage, {
+          duration: 5000,
+        });
+        setError(adminMessage);
+        return;
+      }
 
       toast.success("Đăng nhập thành công!", {
         duration: 3000,
@@ -107,7 +137,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
       </CardHeader>
 
       <CardContent className="px-0 sm:px-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
           {/* UserName */}
           <div className="space-y-2">
             <Label
@@ -125,13 +155,15 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 name="userName"
                 type="text"
                 placeholder="Nhập tên tài khoản của bạn."
-                required
                 value={formData.userName}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.userName)}`}
               />
             </div>
+            {fieldErrors.userName && (
+              <p className="text-xs text-destructive">{fieldErrors.userName}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -153,11 +185,10 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 name="password"
                 type={passwordShow ? "text" : "password"}
                 placeholder="Nhập mật khẩu"
-                required
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 pr-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 pr-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.password)}`}
               />
 
               <button
@@ -172,6 +203,9 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 )}
               </button>
             </div>
+            {fieldErrors.password && (
+              <p className="text-xs text-destructive">{fieldErrors.password}</p>
+            )}
           </div>
 
           <div className="flex items-center justify-between">

@@ -106,16 +106,12 @@ const PostReviewPage = () => {
             return true;
           });
 
-        let hero = itemsOf(heroRes)[0] ?? null;
+        // Hero chỉ lấy bài có cờ IsHightLight thật, không lấy bài khác thế chỗ.
+        const hero = itemsOf(heroRes)[0] ?? null;
         if (hero) seen.add(hero.id);
 
         const favorites = dedupe(itemsOf(likedRes));
-        let highlights = dedupe(itemsOf(hotRes));
-
-        if (!hero) {
-          hero = highlights[0] ?? favorites[0] ?? null;
-          if (hero) highlights = highlights.filter((p) => p.id !== hero.id);
-        }
+        const highlights = dedupe(itemsOf(hotRes));
 
         const picks = dedupe(itemsOf(pickRes));
 
@@ -176,23 +172,23 @@ const PostReviewPage = () => {
   // ===== Render: mode chủ đề =====
   if (categoryId) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/70 to-white">
         <div className="container mx-auto px-4 py-10 max-w-4xl">
           <Link
             to="/post"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-sm font-medium text-sky-600 hover:text-sky-800"
           >
             ← Tất cả bài viết
           </Link>
-          <h1 className="text-2xl font-bold mt-2 mb-6">{catData.name}</h1>
+          <h1 className="text-2xl font-bold mt-2 mb-6 text-slate-900">
+            {catData.name}
+          </h1>
           {loadingCat ? (
-            <p className="text-sm text-muted-foreground">Đang tải...</p>
+            <p className="text-sm text-slate-500">Đang tải...</p>
           ) : catData.posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Chưa có bài viết nào.
-            </p>
+            <p className="text-sm text-slate-500">Chưa có bài viết nào.</p>
           ) : (
-            <div className="flex flex-col divide-y">
+            <div className="flex flex-col divide-y divide-sky-100">
               {catData.posts.map((p) => (
                 <PostCard key={p.id} post={p} variant="row" />
               ))}
@@ -206,14 +202,14 @@ const PostReviewPage = () => {
   // ===== Render: trang chủ =====
   if (loadingHome) {
     return (
-      <p className="text-center py-20 text-sm text-muted-foreground">
+      <p className="text-center py-20 text-sm text-slate-500">
         Đang tải bài viết...
       </p>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/70 to-white">
       <div className="container mx-auto px-4 py-10 md:py-14 space-y-16 md:space-y-20">
         <SectionTodayPicks
           highlights={home.highlights}

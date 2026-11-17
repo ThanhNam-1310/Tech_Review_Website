@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using server.Common.Constants;
 using server.Dtos.Comment;
 using server.Services.Interfaces;
 
@@ -17,7 +19,7 @@ namespace server.Controllers
             return Ok(result);
         }
 
-        [HttpGet("product/{productId}/sentiment-stats")]
+        [HttpGet("product/{productId:guid}/sentiment-stats")]
         public async Task<IActionResult> GetProductSentimentStats(Guid productId)
         {
             var stats = await _comment.GetProductSentimentStatsAsync(productId);
@@ -31,7 +33,15 @@ namespace server.Controllers
             return Ok(result);
         }
 
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetDetailComment(Guid id)
+        {
+            var result = await _comment.GetDetailCommentAsync(id);
+            return Ok(result);
+        }
+
         [HttpPost("add/post/{id:guid}")]
+        [Authorize]
         public async Task<IActionResult> AddNewCommentPost(Guid id, [FromBody] CreateCommentDTO dto)
         {
             var result = await _comment.CreateCommentPostAsync(id, dto);
@@ -39,24 +49,59 @@ namespace server.Controllers
         }
 
         [HttpPost("add/product/{id:guid}")]
+        [Authorize]
         public async Task<IActionResult> AddNewCommentProduct(Guid id, [FromBody] CreateCommentDTO dto)
         {
             var result = await _comment.CreateCommentProductAsync(id, dto);
             return Ok(result);
         }
 
-        [HttpPatch("update/{targetId:guid}")]
-        public async Task<IActionResult> UpdateComment(Guid targetId, [FromBody] UpdateCommentDTO dto)
+        [HttpPatch("update/{commentId:guid}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateComment(Guid commentId, [FromBody] UpdateCommentDTO dto)
         {
-            var result = await _comment.UpdateCommentAsync(targetId, dto);
+            var result = await _comment.UpdateCommentAsync(commentId, dto);
             return Ok(result);
         }
 
-        [HttpDelete("delete/{targetId:guid}")]
-        public async Task<IActionResult> DeleteComment(Guid targetId)
+        [HttpDelete("delete/{commentId:guid}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteComment(Guid commentId)
         {
-            var result = await _comment.DeleteCommentAsync(targetId);
+            var result = await _comment.DeleteCommentAsync(commentId);
             return Ok(result);
+        }
+
+        [HttpPost("{id:guid}/like")]
+        [Authorize]
+        public async Task<IActionResult> LikeComment(Guid id)
+        {
+            var (isLiked, likeCount) = await _comment.TangLikeCountAsync(id);
+            return Ok(new { isLiked, likeCount });
+        }
+
+        [HttpDelete("{id:guid}/dislike")]
+        [Authorize]
+        public async Task<IActionResult> DislikeComment(Guid id)
+        {
+            var (isLiked, likeCount) = await _comment.GiamLikeCountAsync(id);
+            return Ok(new { isLiked, likeCount });
+        }
+
+        [HttpPatch("hide/{id:guid}")]
+        [Authorize(Policy = PermissionConstants.Comment.Hidden)]
+        public async Task<IActionResult> HideComment(Guid id)
+        {
+            await _comment.HiddenCommentAsync(id);
+            return Ok();
+        }
+
+        [HttpPatch("unhide/{id:guid}")]
+        [Authorize(Policy = PermissionConstants.Comment.Hidden)]
+        public async Task<IActionResult> UnHideComment(Guid id)
+        {
+            await _comment.UnHiddenCommentAsync(id);
+            return Ok();
         }
     }
 }

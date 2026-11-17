@@ -84,14 +84,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950 px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-indigo-50 via-indigo-50/50 to-white px-4 py-10">
       {/* Quầng sáng trang trí */}
-      <div className="pointer-events-none absolute -left-32 -top-32 size-96 rounded-full bg-orange-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 size-96 rounded-full bg-amber-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 -top-32 size-96 rounded-full bg-indigo-300/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 size-96 rounded-full bg-violet-300/30 blur-3xl" />
 
-      <Card className="relative w-full max-w-md shadow-2xl">
+      <Card className="relative w-full max-w-md rounded-2xl border-indigo-100 shadow-xl shadow-indigo-100">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-200">
             <ShieldCheck className="size-6" />
           </div>
           <CardTitle className="text-2xl font-bold">
@@ -107,7 +107,7 @@ export default function AdminLoginPage() {
             <div className="space-y-2">
               <Label htmlFor="userName">Tên đăng nhập</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-indigo-400" />
                 <Input
                   id="userName"
                   placeholder="Nhập tên tài khoản quản trị"
@@ -115,7 +115,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setUserName(e.target.value)}
                   disabled={loading}
                   required
-                  className="pl-9"
+                  className="rounded-xl border-indigo-200 pl-9 focus-visible:border-indigo-400 focus-visible:ring-indigo-200"
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function AdminLoginPage() {
             <div className="space-y-2">
               <Label htmlFor="password">Mật khẩu</Label>
               <div className="relative">
-                <LockKeyhole className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <LockKeyhole className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-indigo-400" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -132,12 +132,12 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
                   required
-                  className="pl-9 pr-10"
+                  className="rounded-xl border-indigo-200 pl-9 pr-10 focus-visible:border-indigo-400 focus-visible:ring-indigo-200"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-indigo-600"
                 >
                   {showPassword ? (
                     <EyeOff className="size-4" />
@@ -149,12 +149,16 @@ export default function AdminLoginPage() {
             </div>
 
             {error && (
-              <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
                 {error}
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 shadow-md shadow-indigo-200 hover:from-indigo-600 hover:to-violet-600"
+              disabled={loading}
+            >
               {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
               {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
@@ -164,7 +168,7 @@ export default function AdminLoginPage() {
             Không phải quản trị viên?{" "}
             <Link
               to="/"
-              className="font-medium text-primary underline-offset-4 hover:underline"
+              className="font-medium text-indigo-600 underline-offset-4 hover:underline"
             >
               Quay lại trang chủ
             </Link>

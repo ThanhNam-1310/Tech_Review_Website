@@ -31,5 +31,8 @@ namespace server.Models
 
         // ngày công khai
         public DateTime? PublicDate { get; set; }
+
+        // Id đã thích bài viết
+        public List<Guid> LikeByUserIds { get; set; } = [];
     }
 }

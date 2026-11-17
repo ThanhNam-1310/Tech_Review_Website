@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 namespace server.Services.Implements
 {
     public class PostService(MongoDbContext context, IMapper mapper, ILogger<PostService> logger, IImageService imageService,
-        IOptions<SupabaseSetting> options, ICurrentUserService currentUser) : IPostService
+        IOptions<SupabaseSetting> options, ICurrentUserService currentUser, IViewTrackingService viewTracker, IPermissionService permission) : IPostService
     {
         private readonly MongoDbContext _context = context;
         private readonly IMapper _mapper = mapper;
@@ -26,6 +26,8 @@ namespace server.Services.Implements
         private readonly IImageService _imageService = imageService;
         private readonly SupabaseSetting _storage = options.Value;
         private readonly ICurrentUserService _currentUser = currentUser;
+        private readonly IViewTrackingService _viewTracker = viewTracker;
+        private readonly IPermissionService _permission = permission;
 
         // Lấy tất cả bài viết
         public async Task<PageResult<ListPostDTO>> GetAllPostAsync(PostQueryRequest request)
@@ -123,6 +125,22 @@ namespace server.Services.Implements
                     u => u.FullName ?? string.Empty);
             }
 
+            // Đếm bình luận cho cả trang trong 1 query
+            var postIds = posts.Select(p => p.Id).ToList();
+            var commentCounts = new Dictionary<Guid, int>();
+
+            if (postIds.Count > 0)
+            {
+                var counts = await _context.Comments.Aggregate()
+                    .Match(c => postIds.Contains(c.TargetId)
+                        && c.TargetType == TargetType.Post && !c.IsHidden)
+                    .Group(c => c.TargetId, g => new { PostId = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                commentCounts = counts.ToDictionary(x => x.PostId, x => x.Count);
+            }
+
+
             // Mapping sang ListPostDTO
             var items = posts.Select(p => new ListPostDTO
             {
@@ -130,10 +148,12 @@ namespace server.Services.Implements
                 Title = p.Title,
                 ThumbnailUrl = p.ThumbnailUrl ?? string.Empty,
                 AuthorName = authorNames.GetValueOrDefault(p.AuthorId, string.Empty),
+                Visibility = p.Visibility,
                 PublicDate = p.PublicDate,
                 IsHightLight = p.IsHightLight,
                 ViewCount = p.Rating?.ViewCount ?? 0,
-                LikeCount = p.Rating?.LikeCount ?? 0
+                LikeCount = p.Rating?.LikeCount ?? 0,
+                CommentCount = commentCounts.GetValueOrDefault(p.Id, 0)
             }).ToList();
 
             _logger.LogInformation(
@@ -185,17 +205,18 @@ namespace server.Services.Implements
             if (post.AuthorId == _currentUser.UserId)
             {
                 // Bài của mình → cần quyền trên dữ liệu của mình
-                if (!_currentUser.HasPermission(ownPermission))
+                if (!await _permission.HasPermissionAsync(_currentUser.UserId, ownPermission))
                     throw new ForbiddenException("You do not have permission to perform this action.");
             }
-            else if (!_currentUser.HasPermission(PermissionConstants.Post.Manage))
+            else if (!await _permission.HasPermissionAsync(_currentUser.UserId, PermissionConstants.Post.Manage))
             {
+                // Bài của người khác → cần quyền quản lý
                 throw new ForbiddenException("You do not have permission to edit this post.");
             }
 
-
             return post;
         }
+
 
         // Lấy chi tiết bài viết
         public async Task<PostDTO> GetDetailPostById(Guid id)
@@ -216,6 +237,13 @@ namespace server.Services.Implements
             var result = _mapper.Map<PostDTO>(post);
 
             result.AuthorName = user?.FullName ?? string.Empty;
+            result.IsLiked = _currentUser.IsAuthen && (post.LikeByUserIds?.Contains(_currentUser.UserId) ?? false);
+
+            // Số bình luận đếm và loại bình luận đã ẩn
+            if (result.Rating != null)
+                result.Rating.CommentCount = (int)await _context.Comments.CountDocumentsAsync(
+                    c => c.TargetId == id && c.TargetType == TargetType.Post && !c.IsHidden);
+
 
             _logger.LogInformation(
                 "SUCCESS: Get detail post ID: {Id}", id);
@@ -418,6 +446,12 @@ namespace server.Services.Implements
         // Tăng lượt xem
         public async Task IncreaseViewCountAsync(Guid postId)
         {
+            var post = await _context.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+                ?? throw new NotFoundExcception("Post not found");
+
+            if (!_viewTracker.TryRecordView(postId, post.AuthorId))
+                return;
+
             var update = Builders<Post>.Update
                 .Inc(p => p.Rating.ViewCount, 1);
 
@@ -425,46 +459,60 @@ namespace server.Services.Implements
                 p => p.Id == postId, update);
         }
 
-        // Tăng lượt thích
-        public async Task TangLikeCountAsync(Guid postId)
+        // Tăng lượt thích, mỗi user chỉ được thích 1 lần
+        public async Task<(bool IsLiked, int LikeCount)> TangLikeCountAsync(Guid postId)
         {
-            var update = Builders<Post>.Update
-                .Inc(p => p.Rating.LikeCount, 1);
+            if (!_currentUser.IsAuthen)
+                throw new UnauthorizedAccessException("You need to log in to like a post.");
 
-            await _context.Posts.UpdateOneAsync(
-                p => p.Id == postId, update);
+            var post = await _context.Posts.Find(p => p.Id == postId).FirstOrDefaultAsync()
+                ?? throw new NotFoundExcception("Post not found.");
+
+            var userId = _currentUser.UserId;
+            var likeBy = post.LikeByUserIds ?? [];
+            var userAlreadyLiked = likeBy.Contains(userId);
+
+            if (!userAlreadyLiked)
+            {
+                await _context.Posts.UpdateOneAsync(
+                    p => p.Id == postId,
+                    Builders<Post>.Update
+                        .AddToSet(p => p.LikeByUserIds, userId)
+                        .Inc(p => p.Rating.LikeCount, 1));
+            }
+
+            var likeCount = (post.Rating?.LikeCount ?? 0) + (userAlreadyLiked ? 0 : 1);
+            return (true, likeCount);
         }
 
-        // Giảm lượt thích
-        public async Task GiamLikeCountAsync(Guid postId)
+        // Giảm lượt thích bài viết, user bỏ lượt thích trước đó
+        public async Task<(bool IsLiked, int LikeCount)> GiamLikeCountAsync(Guid postId)
         {
-            var update = Builders<Post>.Update
-                .Inc(p => p.Rating.LikeCount, -1);
+            if (!_currentUser.IsAuthen)
+                throw new UnauthorizedAccessException("You need to log in to unlike a post.");
 
-            await _context.Posts.UpdateOneAsync(
-                p => p.Id == postId, update);
+            var post = await _context.Posts
+                .Find(p => p.Id == postId)
+                .FirstOrDefaultAsync()
+                ?? throw new NotFoundExcception("Post not found.");
+
+            var userId = _currentUser.UserId;
+            var likedBy = post.LikeByUserIds ?? [];
+            var alreadyLiked = likedBy.Contains(userId);
+
+            if (alreadyLiked)
+            {
+                await _context.Posts.UpdateOneAsync(
+                    p => p.Id == postId,
+                    Builders<Post>.Update
+                        .Pull(p => p.LikeByUserIds, userId)
+                        .Inc(p => p.Rating.LikeCount, -1));
+            }
+
+            var likeCount = (post.Rating?.LikeCount ?? 0) - (alreadyLiked ? 1 : 0);
+            return (false, likeCount);
         }
 
-
-        // Tăng số bình luận
-        public async Task TangCommentAsync(Guid postId)
-        {
-            var update = Builders<Post>.Update
-                .Inc(p => p.Rating.CommentCount, 1);
-
-            await _context.Posts.UpdateOneAsync(
-                p => p.Id == postId, update);
-        }
-
-        // Giảm số bình luận
-        public async Task GiamCommentAsync(Guid postId)
-        {
-            var update = Builders<Post>.Update
-                .Inc(p => p.Rating.CommentCount, -1);
-
-            await _context.Posts.UpdateOneAsync(
-                p => p.Id == postId, update);
-        }
 
         // danh sách bài viết theo user id 
         public async Task<PageResult<ListPostDTO>> GetPostByAuthorIdAsync(Guid authorId, PageRequest request)

@@ -180,53 +180,69 @@ const RolePermissions = ({ role }) => {
           Role này chưa được gán quyền nào.
         </p>
       ) : (
-        <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {groups.map(({ resource, items, meta }) => {
-            const Icon = meta.icon;
-            return (
-              <div
-                key={resource}
-                className="overflow-hidden rounded-2xl border bg-card shadow-sm"
-              >
-                <div className="flex items-center gap-2.5 border-b bg-muted/40 px-4 py-3">
-                  <span
-                    className={`flex size-8 items-center justify-center rounded-lg ${meta.chip}`}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="text-sm font-semibold">{meta.label}</span>
-                  <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    {items.length} quyền
-                  </span>
-                </div>
-                <div className="space-y-1 p-2">
-                  {items.map((p) => (
-                    <div
+        <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-muted/60 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="border-b px-4 py-2.5">Quyền</th>
+                <th className="border-b px-4 py-2.5"></th>
+                <th className="border-b px-4 py-2.5">Mô tả</th>
+                <th className="border-b px-4 py-2.5 text-right">Mã quyền</th>
+              </tr>
+            </thead>
+            {groups.map(({ resource, items, meta }) => {
+              const Icon = meta.icon;
+              return (
+                <tbody key={resource}>
+                  {items.map((p, i) => (
+                    <tr
                       key={p.id}
-                      className="flex items-start gap-2.5 rounded-lg px-2 py-2 hover:bg-muted/50"
+                      className="border-t transition-colors hover:bg-muted/50"
                     >
-                      <CircleCheck
-                        className={`mt-0.5 size-4 shrink-0 ${meta.dot}`}
-                      />
-                      <div className="min-w-0">
-                        <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                          {actionLabel(p)}
-                          <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
-                            {p.name}
-                          </code>
-                        </p>
-                        {p.description && (
-                          <p className="text-xs text-muted-foreground">
-                            {p.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                      {i === 0 && (
+                        <td
+                          rowSpan={items.length}
+                          className="w-44 bg-muted/40 px-4 py-3 align-top"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${meta.chip}`}
+                            >
+                              <Icon className="size-4" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold leading-tight">
+                                {meta.label}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {items.length} quyền
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                      )}
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-2.5">
+                          <CircleCheck
+                            className={`size-4 shrink-0 ${meta.dot}`}
+                          />
+                          <span className="font-medium">{actionLabel(p)}</span>
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {p.description || "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-right">
+                        <code className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                          {p.name}
+                        </code>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              </div>
-            );
-          })}
+                </tbody>
+              );
+            })}
+          </table>
         </div>
       )}
     </div>
@@ -259,7 +275,7 @@ export default function AdminPermissionsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-950/40">
+        <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-teal-500 text-white shadow-sm shadow-sky-500/25">
           <ShieldCheck className="size-5" />
         </span>
         <div>

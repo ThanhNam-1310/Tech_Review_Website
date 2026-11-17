@@ -41,11 +41,5 @@ namespace server.Services.Interfaces
         Task<string> UploadProductThumbnailAsync(IFormFile file, Guid productId);
         Task<string> UploadProductImageAsync(IFormFile file, Guid productId);
 
-        // Rating
-        Task IncreaseViewCountAsync(Guid productId);
-        Task TangLikeCountAsync(Guid productId);
-        Task GiamLikeCountAsync(Guid productId);
-        Task TangCommentAsync(Guid productId);
-        Task GiamCommentAsync(Guid productId);
     }
 }

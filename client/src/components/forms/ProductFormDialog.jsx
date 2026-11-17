@@ -19,6 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  productDialogCreateSchema,
+  productDialogUpdateSchema,
+  validateSchema,
+  errCls,
+} from "@/validation/schemas";
 
 /**
  * @param {"create" | "update"} mode
@@ -40,6 +46,20 @@ const ProductFormDialog = ({
   const [thumnailUrl, setThumnailUrl] = useState("");
   const [imagesText, setImagesText] = useState(""); // mỗi dòng 1 URL
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const clearError = (field) =>
+    setErrors((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      Object.keys(next).forEach((k) => {
+        if (k === field || k.startsWith(`${field}[`)) {
+          delete next[k];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +78,7 @@ const ProductFormDialog = ({
     setImagesText(
       Array.isArray(initialData?.images) ? initialData.images.join("\n") : "",
     );
+    setErrors({});
   }, [open, initialData]);
 
   const parseImages = () =>
@@ -67,8 +88,20 @@ const ProductFormDialog = ({
       .filter(Boolean);
 
   const handleSubmit = async () => {
-    if (!name.trim()) return;
-    if (mode === "create" && !categoryId) return;
+    const errs = await validateSchema(
+      mode === "create" ? productDialogCreateSchema : productDialogUpdateSchema,
+      {
+        name,
+        brand,
+        categoryId,
+        price: price === "" ? null : Number(price),
+        description,
+        thumnailUrl,
+        images: parseImages(),
+      },
+    );
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
     setSubmitting(true);
     try {
@@ -103,6 +136,10 @@ const ProductFormDialog = ({
     }
   };
 
+  const imagesErrorKey = Object.keys(errors).find((k) =>
+    k.startsWith("images["),
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
@@ -118,9 +155,16 @@ const ProductFormDialog = ({
             <Input
               id="p-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                clearError("name");
+              }}
               placeholder="Nhập tên sản phẩm"
+              className={errCls(errors.name)}
             />
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -128,18 +172,28 @@ const ProductFormDialog = ({
             <Input
               id="p-brand"
               value={brand}
-              onChange={(e) => setBrand(e.target.value)}
+              onChange={(e) => {
+                setBrand(e.target.value);
+                clearError("brand");
+              }}
               placeholder="VD: Asus, Dell..."
+              className={errCls(errors.brand)}
             />
+            {errors.brand && (
+              <p className="text-xs text-destructive">{errors.brand}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
             <Label>Danh mục {mode === "create" ? "*" : ""}</Label>
             <Select
               value={categoryId || undefined}
-              onValueChange={setCategoryId}
+              onValueChange={(v) => {
+                setCategoryId(v);
+                clearError("categoryId");
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger className={errCls(errors.categoryId)}>
                 <SelectValue placeholder="Chọn danh mục" />
               </SelectTrigger>
               <SelectContent>
@@ -150,6 +204,9 @@ const ProductFormDialog = ({
                 ))}
               </SelectContent>
             </Select>
+            {errors.categoryId && (
+              <p className="text-xs text-destructive">{errors.categoryId}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -160,9 +217,16 @@ const ProductFormDialog = ({
               min={0}
               step="1000"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                setPrice(e.target.value);
+                clearError("price");
+              }}
               placeholder="VD: 15000000"
+              className={errCls(errors.price)}
             />
+            {errors.price && (
+              <p className="text-xs text-destructive">{errors.price}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -171,9 +235,16 @@ const ProductFormDialog = ({
               id="p-desc"
               rows={3}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                clearError("description");
+              }}
               placeholder="Mô tả ngắn..."
+              className={errCls(errors.description)}
             />
+            {errors.description && (
+              <p className="text-xs text-destructive">{errors.description}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -181,9 +252,16 @@ const ProductFormDialog = ({
             <Input
               id="p-thumb"
               value={thumnailUrl}
-              onChange={(e) => setThumnailUrl(e.target.value)}
+              onChange={(e) => {
+                setThumnailUrl(e.target.value);
+                clearError("thumnailUrl");
+              }}
               placeholder="https://..."
+              className={errCls(errors.thumnailUrl)}
             />
+            {errors.thumnailUrl && (
+              <p className="text-xs text-destructive">{errors.thumnailUrl}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -192,9 +270,18 @@ const ProductFormDialog = ({
               id="p-images"
               rows={3}
               value={imagesText}
-              onChange={(e) => setImagesText(e.target.value)}
+              onChange={(e) => {
+                setImagesText(e.target.value);
+                clearError("images");
+              }}
               placeholder={"https://img1.jpg\nhttps://img2.jpg"}
+              className={errCls(imagesErrorKey)}
             />
+            {imagesErrorKey && (
+              <p className="text-xs text-destructive">
+                {errors[imagesErrorKey]}
+              </p>
+            )}
           </div>
         </div>
 
@@ -206,14 +293,7 @@ const ProductFormDialog = ({
           >
             Hủy
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              submitting ||
-              !name.trim() ||
-              (mode === "create" && (!brand.trim() || !categoryId))
-            }
-          >
+          <Button onClick={handleSubmit} disabled={submitting}>
             {submitting
               ? "Đang lưu..."
               : mode === "create"

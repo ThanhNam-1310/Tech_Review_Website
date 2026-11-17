@@ -9,7 +9,7 @@ import {
   UploadPostContentImage,
 } from "@/apis/post.api";
 import { GetAllCategories } from "@/apis/category.api";
-import { GetAllProduct } from "@/apis/product.api";
+import { GetAllProductOfCategory } from "@/apis/product.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +35,12 @@ import {
   AlignLeft,
   PenLine,
 } from "lucide-react";
+import {
+  postCreateSchema,
+  postUpdateSchema,
+  validateSchema,
+  errCls,
+} from "@/validation/schemas";
 
 // ===== Enum phía BE (đã đối chiếu) =====
 // PostContentType: Image = 1, Text = 2
@@ -44,32 +50,26 @@ const VISIBILITY = { PostPublic: 1, PostPrivate: 2 };
 const NONE = "none"; // giá trị đại diện "không chọn" cho Select
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-const newTextBlock = () => ({
+const newBlock = (kind) => ({
   key: uid(),
-  kind: "text",
+  kind,
   value: "",
   file: null,
   preview: null,
 });
-const newImageBlock = () => ({
-  key: uid(),
-  kind: "image",
-  value: "",
-  file: null,
-  preview: null,
-});
-
+const itemsOf = (res) => res.data?.items ?? res.data ?? [];
 const normalizeOption = (o) => ({
   id:
     o.id ?? o.Id ?? o.productId ?? o.ProductId ?? o.categoryId ?? o.CategoryId,
   name: o.name ?? o.Name ?? "",
 });
 
-// Style dùng chung cho input — chỉ là className, không động vào logic
+// Style dùng chung — chỉ là className, không động vào logic
 const inputCls =
   "rounded-xl border-orange-100 bg-white focus-visible:border-orange-300 focus-visible:ring-orange-400";
-
 const labelCls = "text-sm font-medium text-zinc-700";
+const fileCls =
+  "max-w-xs cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200";
 
 // Tiêu đề từng nhóm field — component trình bày thuần túy
 const SectionTitle = ({ icon: Icon, children }) => (
@@ -81,6 +81,34 @@ const SectionTitle = ({ icon: Icon, children }) => (
       {children}
     </h4>
   </div>
+);
+
+// Ảnh xem trước dùng chung cho thumbnail và block ảnh
+const Thumb = ({ src }) =>
+  src ? (
+    <img
+      src={src}
+      alt=""
+      className="h-24 w-40 shrink-0 rounded-xl border border-orange-100 object-cover shadow-sm"
+    />
+  ) : (
+    <div className="flex h-24 w-40 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white">
+      <ImageOff className="h-5 w-5 text-orange-300" />
+    </div>
+  );
+
+// Nút icon dùng chung cho lên/xuống/xóa block
+const IconBtn = ({ onClick, disabled = false, hover, children }) => (
+  <Button
+    type="button"
+    size="icon"
+    variant="ghost"
+    className={`rounded-lg ${hover}`}
+    onClick={onClick}
+    disabled={disabled}
+  >
+    {children}
+  </Button>
 );
 
 // Dùng 2 kiểu:
@@ -102,36 +130,57 @@ const PostForm = ({
   const [categoryId, setCategoryId] = useState("");
   const [productId, setProductId] = useState("");
   const [visibility, setVisibility] = useState(VISIBILITY.PostPublic);
-
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-
-  const [blocks, setBlocks] = useState([newTextBlock()]);
+  const [blocks, setBlocks] = useState([newBlock("text")]);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  // ===== Load danh mục + sản phẩm cho 2 ô select =====
+  const clearError = (field) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
+  // ===== Load danh mục 1 lần =====
   useEffect(() => {
     (async () => {
       try {
         const res = await GetAllCategories();
-        const items = res.data?.items ?? res.data ?? [];
-        setCategories(items.map(normalizeOption));
+        setCategories(itemsOf(res).map(normalizeOption));
       } catch (err) {
         console.error("Lỗi load categories:", err);
       }
+    })();
+  }, []);
+
+  // ===== Load sản phẩm theo danh mục đã chọn =====
+  useEffect(() => {
+    if (!categoryId) {
+      setProducts([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
       try {
-        const res = await GetAllProduct({ pageNumber: 1, pageSize: 100 });
-        const items = res.data?.items ?? res.data ?? [];
-        setProducts(items.map(normalizeOption));
+        const res = await GetAllProductOfCategory(categoryId, {
+          pageNumber: 1,
+          pageSize: 100,
+        });
+        if (!cancelled) setProducts(itemsOf(res).map(normalizeOption));
       } catch (err) {
         console.error("Lỗi load products:", err);
       }
     })();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId]);
 
   // ===== Chế độ sửa: load chi tiết bài =====
   useEffect(() => {
@@ -165,21 +214,15 @@ const PostForm = ({
                 c.valueType ??
                 c.ValueType ??
                 "";
-              return rawType === CONTENT_TYPE.Image || rawType === "Image"
-                ? {
-                    key: uid(),
-                    kind: "image",
-                    value,
-                    file: null,
-                    preview: value || null,
-                  }
-                : {
-                    key: uid(),
-                    kind: "text",
-                    value,
-                    file: null,
-                    preview: null,
-                  };
+              const isImage =
+                rawType === CONTENT_TYPE.Image || rawType === "Image";
+              return {
+                key: uid(),
+                kind: isImage ? "image" : "text",
+                value,
+                file: null,
+                preview: isImage ? value || null : null,
+              };
             }),
           );
         }
@@ -192,15 +235,28 @@ const PostForm = ({
     })();
   }, [id, isEdit]);
 
+  // Sửa/thêm/xóa/di chuyển block thì xóa lỗi của khối nội dung, lần submit sau validate lại
+  useEffect(() => {
+    setErrors((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      Object.keys(next).forEach((k) => {
+        if (k === "contents" || k.startsWith("contents[")) {
+          delete next[k];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [blocks]);
+
   // ===== Thao tác trên từng block content =====
   const patchBlock = (key, patch) =>
     setBlocks((prev) =>
       prev.map((b) => (b.key === key ? { ...b, ...patch } : b)),
     );
-
   const removeBlock = (key) =>
     setBlocks((prev) => prev.filter((b) => b.key !== key));
-
   const moveBlock = (index, dir) => {
     setBlocks((prev) => {
       const next = [...prev];
@@ -210,16 +266,21 @@ const PostForm = ({
       return next;
     });
   };
-
   const handleBlockImage = (key, file) => {
     if (!file) return;
     patchBlock(key, { file, preview: URL.createObjectURL(file) });
   };
-
   const handleThumbnail = (file) => {
     if (!file) return;
     setThumbnailFile(file);
     setThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  // Đổi danh mục thì xóa luôn sản phẩm đã chọn (kẻo dính sản phẩm của danh mục cũ)
+  const handleCategoryChange = (v) => {
+    setCategoryId(v === NONE ? "" : v);
+    setProductId("");
+    setProducts([]);
   };
 
   // Dựng mảng Contents gửi BE; imageUrls[i] là URL vừa upload cho block ảnh ở vị trí i
@@ -244,36 +305,37 @@ const PostForm = ({
     return urls;
   };
 
+  const basePayload = () => ({
+    title: title.trim(),
+    description: description.trim(),
+    categoryId: categoryId || null,
+    productId: productId || null,
+    visibility,
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Thiếu tiêu đề", {
-        description: "Vui lòng nhập tiêu đề bài viết.",
-      });
-      return;
-    }
+    const errs = await validateSchema(
+      isEdit ? postUpdateSchema : postCreateSchema,
+      { title, description, visibility, contents: blocks },
+    );
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setSaving(true);
     try {
       if (isEdit) {
         if (thumbnailFile) await UploadPostThumbnail(thumbnailFile, id);
         const urls = await uploadContentImages(id);
         await UpdatePostById(id, {
-          title: title.trim(),
-          description: description.trim(),
-          categoryId: categoryId || null,
-          productId: productId || null,
-          visibility,
+          ...basePayload(),
           contents: buildContents(urls),
         });
         toast.success("Thành công", { description: "Đã cập nhật bài viết." });
       } else {
         // 1. Tạo post trước để có id (ảnh content tạm để rỗng)
         const res = await CreateNewPost({
-          title: title.trim(),
-          description: description.trim(),
-          categoryId: categoryId || null,
-          productId: productId || null,
-          visibility,
+          ...basePayload(),
           contents: buildContents(),
         });
         const newPostId =
@@ -292,7 +354,9 @@ const PostForm = ({
       }
 
       // Nhúng trong dialog: báo page đóng dialog + refresh danh sách
+      // Tạo mới ở trang thường: về trang bài viết của tôi
       if (embedded) onSuccess();
+      else if (!isEdit) navigate("/my-posts");
     } catch (err) {
       console.error("Lỗi lưu bài viết:", err);
       toast.error("Thất bại", {
@@ -313,7 +377,7 @@ const PostForm = ({
   }
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
       {/* ===== Thông tin bài viết ===== */}
       <div className="space-y-4">
         <SectionTitle icon={Newspaper}>Thông tin bài viết</SectionTitle>
@@ -322,21 +386,33 @@ const PostForm = ({
           <Label className={labelCls}>Tiêu đề *</Label>
           <Input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              clearError("title");
+            }}
             placeholder="VD: Đánh giá Laptop 2026..."
-            className={inputCls}
+            className={`${inputCls}${errCls(errors.title)}`}
           />
+          {errors.title && (
+            <p className="text-xs text-destructive">{errors.title}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label className={labelCls}>Mô tả ngắn</Label>
+          <Label className={labelCls}>Mô tả ngắn{!isEdit ? " *" : ""}</Label>
           <Textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              clearError("description");
+            }}
             placeholder="Tóm tắt nội dung bài viết..."
             rows={3}
-            className={inputCls}
+            className={`${inputCls}${errCls(errors.description)}`}
           />
+          {errors.description && (
+            <p className="text-xs text-destructive">{errors.description}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -344,12 +420,17 @@ const PostForm = ({
             <Label className={labelCls}>Chủ đề</Label>
             <Select
               value={categoryId || NONE}
-              onValueChange={(v) => setCategoryId(v === NONE ? "" : v)}
+              onValueChange={handleCategoryChange}
             >
               <SelectTrigger className={inputCls}>
                 <SelectValue placeholder="Không chọn" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+              >
                 <SelectItem value={NONE}>Không chọn</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
@@ -365,11 +446,17 @@ const PostForm = ({
             <Select
               value={productId || NONE}
               onValueChange={(v) => setProductId(v === NONE ? "" : v)}
+              // disabled={!categoryId}
             >
               <SelectTrigger className={inputCls}>
                 <SelectValue placeholder="Không chọn" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+              >
                 <SelectItem value={NONE}>Không chọn</SelectItem>
                 {products.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
@@ -389,7 +476,12 @@ const PostForm = ({
               <SelectTrigger className={inputCls}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+              >
                 <SelectItem value={String(VISIBILITY.PostPublic)}>
                   Công khai
                 </SelectItem>
@@ -406,17 +498,7 @@ const PostForm = ({
       <div className="space-y-3">
         <SectionTitle icon={ImagePlus}>Ảnh đại diện</SectionTitle>
         <div className="flex flex-col gap-4 rounded-2xl border-2 border-dashed border-orange-200 bg-orange-50/40 p-4 sm:flex-row sm:items-center">
-          {thumbnailPreview ? (
-            <img
-              src={thumbnailPreview}
-              alt=""
-              className="h-24 w-40 shrink-0 rounded-xl border border-orange-100 object-cover shadow-sm"
-            />
-          ) : (
-            <div className="flex h-24 w-40 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white">
-              <ImageOff className="h-5 w-5 text-orange-300" />
-            </div>
-          )}
+          <Thumb src={thumbnailPreview} />
           <div className="space-y-1">
             <p className="text-sm font-medium text-zinc-700">
               Chọn ảnh đại diện cho bài viết
@@ -427,7 +509,7 @@ const PostForm = ({
             <Input
               type="file"
               accept="image/*"
-              className="max-w-xs cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200"
+              className={fileCls}
               onChange={(e) => handleThumbnail(e.target.files?.[0])}
             />
           </div>
@@ -437,84 +519,78 @@ const PostForm = ({
       {/* ===== Nội dung bài viết ===== */}
       <div className="space-y-3">
         <SectionTitle icon={AlignLeft}>Nội dung bài viết</SectionTitle>
-        {blocks.map((b, i) => (
-          <div
-            key={b.key}
-            className="space-y-3 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm"
-          >
-            <div className="flex items-center gap-2">
-              <Badge
-                className={
-                  b.kind === "image"
-                    ? "bg-violet-100 text-violet-700 hover:bg-violet-100"
-                    : "bg-sky-100 text-sky-700 hover:bg-sky-100"
-                }
-              >
-                {b.kind === "image" ? "Ảnh" : "Đoạn văn"}
-              </Badge>
-              <div className="flex-1" />
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="rounded-lg hover:bg-orange-50 hover:text-orange-600"
-                onClick={() => moveBlock(i, -1)}
-                disabled={i === 0}
-              >
-                <ArrowUp className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="rounded-lg hover:bg-orange-50 hover:text-orange-600"
-                onClick={() => moveBlock(i, 1)}
-                disabled={i === blocks.length - 1}
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="rounded-lg hover:bg-red-50 hover:text-red-600"
-                onClick={() => removeBlock(b.key)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {b.kind === "text" ? (
-              <Textarea
-                value={b.value}
-                onChange={(e) => patchBlock(b.key, { value: e.target.value })}
-                placeholder="Nhập nội dung đoạn văn..."
-                rows={4}
-                className={inputCls}
-              />
-            ) : (
-              <div className="flex flex-col gap-3 rounded-xl bg-orange-50/40 p-3 sm:flex-row sm:items-center">
-                {b.preview ? (
-                  <img
-                    src={b.preview}
-                    alt=""
-                    className="h-24 w-40 shrink-0 rounded-xl border border-orange-100 object-cover shadow-sm"
-                  />
-                ) : (
-                  <div className="flex h-24 w-40 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-white">
-                    <ImageOff className="h-5 w-5 text-orange-300" />
-                  </div>
-                )}
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className="max-w-xs cursor-pointer rounded-xl border-orange-100 bg-white file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-orange-700 hover:file:bg-orange-200"
-                  onChange={(e) => handleBlockImage(b.key, e.target.files?.[0])}
-                />
+        {errors.contents && (
+          <p className="text-xs text-destructive">{errors.contents}</p>
+        )}
+        {blocks.map((b, i) => {
+          const blockError =
+            errors[`contents[${i}].value`] || errors[`contents[${i}]`];
+          return (
+            <div
+              key={b.key}
+              className="space-y-3 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={
+                    b.kind === "image"
+                      ? "bg-violet-100 text-violet-700 hover:bg-violet-100"
+                      : "bg-sky-100 text-sky-700 hover:bg-sky-100"
+                  }
+                >
+                  {b.kind === "image" ? "Ảnh" : "Đoạn văn"}
+                </Badge>
+                <div className="flex-1" />
+                <IconBtn
+                  onClick={() => moveBlock(i, -1)}
+                  disabled={i === 0}
+                  hover="hover:bg-orange-50 hover:text-orange-600"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </IconBtn>
+                <IconBtn
+                  onClick={() => moveBlock(i, 1)}
+                  disabled={i === blocks.length - 1}
+                  hover="hover:bg-orange-50 hover:text-orange-600"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </IconBtn>
+                <IconBtn
+                  onClick={() => removeBlock(b.key)}
+                  hover="hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </IconBtn>
               </div>
-            )}
-          </div>
-        ))}
+
+              {b.kind === "text" ? (
+                <Textarea
+                  value={b.value}
+                  onChange={(e) => patchBlock(b.key, { value: e.target.value })}
+                  placeholder="Nhập nội dung đoạn văn..."
+                  rows={4}
+                  className={`${inputCls}${errCls(errors[`contents[${i}].value`])}`}
+                />
+              ) : (
+                <div className="flex flex-col gap-3 rounded-xl bg-orange-50/40 p-3 sm:flex-row sm:items-center">
+                  <Thumb src={b.preview} />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className={fileCls}
+                    onChange={(e) =>
+                      handleBlockImage(b.key, e.target.files?.[0])
+                    }
+                  />
+                </div>
+              )}
+
+              {blockError && (
+                <p className="text-xs text-destructive">{blockError}</p>
+              )}
+            </div>
+          );
+        })}
 
         <div className="flex gap-2">
           <Button
@@ -522,7 +598,7 @@ const PostForm = ({
             variant="outline"
             size="sm"
             className="rounded-xl border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-700"
-            onClick={() => setBlocks((prev) => [...prev, newTextBlock()])}
+            onClick={() => setBlocks((prev) => [...prev, newBlock("text")])}
           >
             <Type className="h-4 w-4 mr-1" /> Thêm đoạn văn
           </Button>
@@ -531,7 +607,7 @@ const PostForm = ({
             variant="outline"
             size="sm"
             className="rounded-xl border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-700"
-            onClick={() => setBlocks((prev) => [...prev, newImageBlock()])}
+            onClick={() => setBlocks((prev) => [...prev, newBlock("image")])}
           >
             <ImagePlus className="h-4 w-4 mr-1" /> Thêm ảnh
           </Button>

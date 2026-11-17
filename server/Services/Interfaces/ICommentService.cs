@@ -27,9 +27,15 @@ namespace server.Services.Interfaces
 
         // ẩn bình luận (dành cho admin)
         Task HiddenCommentAsync(Guid commentId);
-        
+
         // hiện bình luận (dành cho admin)
         Task UnHiddenCommentAsync(Guid commentId);
+
+        // like bình luận
+        Task<(bool IsLiked, int LikeCount)> TangLikeCountAsync(Guid commentId);
+
+        // bỏ like bình luận
+        Task<(bool IsLiked, int LikeCount)> GiamLikeCountAsync(Guid commentId);
 
         Task<CommentSentimentStatsDTO> GetProductSentimentStatsAsync(Guid productId);
     }

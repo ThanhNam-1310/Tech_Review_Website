@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProductCard({ product }) {
@@ -20,19 +20,12 @@ export default function ProductCard({ product }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <div className="flex items-center justify-between gap-2">
-          <Badge
-            variant="secondary"
-            className="shrink-0 px-1.5 py-0 text-[10px] font-normal"
-          >
-            {product.categoryName || "Chưa phân loại"}
+        {product.isCreatedByExpert && (
+          <Badge className="w-fit gap-1 bg-violet-600 px-2 py-0.5 text-[11px] font-medium text-white hover:bg-violet-600">
+            <BadgeCheck className="h-3 w-3" />
+            Chuyên gia bình chọn
           </Badge>
-
-          <div className="flex shrink-0 items-center gap-0.5 text-xs font-semibold">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            {product.score ?? product.rating?.averageRating ?? 0}
-          </div>
-        </div>
+        )}
 
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
           {product.name}

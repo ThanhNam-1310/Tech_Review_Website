@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +25,14 @@ import {
   DeleteSpecification,
 } from "@/apis/specification.api";
 import CreateSpecificationDialog from "@/components/forms/CreateSpecificationDialog";
-import { Loader2, Pencil, Trash2, Check, X } from "lucide-react";
+import {
+  Loader2,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  SlidersHorizontal,
+} from "lucide-react";
 
 export default function AdminSpecificationPage() {
   const [categories, setCategories] = useState([]);
@@ -125,15 +130,30 @@ export default function AdminSpecificationPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold">Quản lý đặc điểm kỹ thuật</h1>
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+      <div className="flex items-center gap-3">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-sm">
+          <SlidersHorizontal className="size-5" />
+        </span>
+        <div>
+          <h1 className="text-2xl font-bold leading-tight">
+            Quản lý đặc điểm kỹ thuật
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Chọn danh mục cha để xem và quản lý các đặc điểm kỹ thuật của nó.
+          </p>
+        </div>
+      </div>
 
       <Select value={categoryId} onValueChange={setCategoryId} modal={false}>
-        <SelectTrigger className="w-full max-w-xs">
+        <SelectTrigger className="w-full max-w-xs border-indigo-200 bg-white">
           <SelectValue placeholder="Chọn danh mục cha" />
         </SelectTrigger>
         <SelectContent
           position="popper"
+          side="bottom"
+          align="start"
+          sideOffset={4}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
           {categories.map((c) => (
@@ -144,13 +164,13 @@ export default function AdminSpecificationPage() {
         </SelectContent>
       </Select>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+      <Card className="overflow-hidden rounded-2xl border-indigo-100 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-indigo-100 bg-indigo-50/50 pb-3">
           <CardTitle className="text-base">
             Đặc điểm kỹ thuật
             {categoryId && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({specs.length})
+              <span className="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-sm font-semibold text-indigo-700">
+                {specs.length}
               </span>
             )}
           </CardTitle>
@@ -160,38 +180,38 @@ export default function AdminSpecificationPage() {
           />
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-4">
           {!categoryId ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
+            <p className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 py-8 text-center text-sm text-muted-foreground">
               Chọn danh mục để xem
             </p>
           ) : loading ? (
-            <div className="py-8 flex justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
             </div>
           ) : specs.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Chưa có specification nào
+            <p className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 py-8 text-center text-sm text-muted-foreground">
+              Chưa có đặc điểm kỹ thuật nào
             </p>
           ) : (
-            <ul className="divide-y rounded-md border">
+            <ul className="divide-y divide-indigo-100 overflow-hidden rounded-xl border border-indigo-100">
               {specs.map((spec) => (
                 <li
                   key={spec.id}
-                  className="flex items-center gap-2 px-3 py-2.5"
+                  className="flex items-center gap-2 px-3 py-2.5 transition-colors hover:bg-indigo-50/50"
                 >
                   {editingId === spec.id ? (
                     <>
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="h-8 flex-1"
+                        className="h-8 flex-1 border-indigo-200 focus-visible:ring-indigo-500"
                         autoFocus
                       />
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 text-green-600"
+                        className="h-8 w-8 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700"
                         onClick={() => handleSave(spec.id)}
                         disabled={saving}
                       >
@@ -204,7 +224,7 @@ export default function AdminSpecificationPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8"
+                        className="h-8 w-8 hover:bg-muted"
                         onClick={() => setEditingId(null)}
                       >
                         <X className="h-4 w-4" />
@@ -218,7 +238,7 @@ export default function AdminSpecificationPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8"
+                        className="h-8 w-8 hover:bg-indigo-100 hover:text-indigo-600"
                         onClick={() => {
                           setEditingId(spec.id);
                           setEditName(spec.name);
@@ -229,7 +249,7 @@ export default function AdminSpecificationPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 text-destructive"
+                        className="h-8 w-8 text-destructive hover:bg-rose-50"
                         onClick={() => setDeleteId(spec.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -248,7 +268,7 @@ export default function AdminSpecificationPage() {
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="rounded-2xl border-indigo-100 sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Xác nhận xóa</DialogTitle>
             <DialogDescription>
@@ -258,6 +278,7 @@ export default function AdminSpecificationPage() {
           <DialogFooter>
             <Button
               variant="outline"
+              className="border-indigo-200 hover:bg-indigo-50"
               onClick={() => setDeleteId(null)}
               disabled={deleting}
             >
@@ -268,7 +289,7 @@ export default function AdminSpecificationPage() {
               onClick={handleDelete}
               disabled={deleting}
             >
-              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Xóa
             </Button>
           </DialogFooter>

@@ -28,6 +28,11 @@ import {
 } from "@/apis/product.api";
 import { GetAllCategories } from "@/apis/category.api";
 import { GetAllSpecifiByCategory } from "@/apis/specification.api";
+import {
+  productFormSchema,
+  validateSchema,
+  errCls,
+} from "@/validation/schemas";
 
 const idOf = (o) => o?.id ?? o?.Id;
 const nameOf = (o) => o?.name ?? o?.Name;
@@ -74,7 +79,20 @@ const CreateProductForm = ({
 
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(INITIAL_FORM);
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const [errors, setErrors] = useState({});
+
+  const clearError = (field) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
+  const set = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    clearError(key);
+  };
 
   // specs theo category
   const [specTemplates, setSpecTemplates] = useState([]);
@@ -195,6 +213,16 @@ const CreateProductForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const errs = await validateSchema(productFormSchema, {
+      ...form,
+      specifications: specTemplates.map((t) => ({
+        specificationId: String(idOf(t)),
+        value: specValues[idOf(t)] ?? "",
+      })),
+    });
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setSubmitting(true);
     try {
       const specifications = specTemplates
@@ -245,6 +273,7 @@ const CreateProductForm = ({
         setSpecValues({});
         setThumb(null);
         setImages([]);
+        setErrors({});
       }
     } catch (error) {
       console.error("Lỗi:", error.response?.data || error);
@@ -261,6 +290,7 @@ const CreateProductForm = ({
   return (
     <form
       onSubmit={handleSubmit}
+      noValidate
       className={
         embedded ? "space-y-4" : "mx-auto max-w-6xl space-y-5 p-4 md:p-6"
       }
@@ -304,28 +334,39 @@ const CreateProductForm = ({
               <Input
                 value={form.name}
                 onChange={set("name")}
-                required
                 placeholder="VD: Laptop Gaming XYZ..."
-                className={inputCls}
+                className={`${inputCls}${errCls(errors.name)}`}
               />
+              {errors.name && (
+                <p className="mt-1.5 text-xs text-destructive">{errors.name}</p>
+              )}
             </Field>
 
             <Field label="Thương hiệu">
               <Input
                 value={form.brand}
                 onChange={set("brand")}
-                required
                 placeholder="VD: ASUS, MSI..."
-                className={inputCls}
+                className={`${inputCls}${errCls(errors.brand)}`}
               />
+              {errors.brand && (
+                <p className="mt-1.5 text-xs text-destructive">
+                  {errors.brand}
+                </p>
+              )}
             </Field>
 
             <Field label="Danh mục">
               <Select
                 value={form.categoryId}
-                onValueChange={(v) => setForm((f) => ({ ...f, categoryId: v }))}
+                onValueChange={(v) => {
+                  setForm((f) => ({ ...f, categoryId: v }));
+                  clearError("categoryId");
+                }}
               >
-                <SelectTrigger className={inputCls}>
+                <SelectTrigger
+                  className={`${inputCls}${errCls(errors.categoryId)}`}
+                >
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
                 <SelectContent>
@@ -337,6 +378,11 @@ const CreateProductForm = ({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.categoryId && (
+                <p className="mt-1.5 text-xs text-destructive">
+                  {errors.categoryId}
+                </p>
+              )}
             </Field>
 
             <Field label="Giá">
@@ -346,8 +392,13 @@ const CreateProductForm = ({
                 value={form.price}
                 onChange={set("price")}
                 placeholder="VD: 25000000"
-                className={inputCls}
+                className={`${inputCls}${errCls(errors.price)}`}
               />
+              {errors.price && (
+                <p className="mt-1.5 text-xs text-destructive">
+                  {errors.price}
+                </p>
+              )}
             </Field>
 
             <Field label="Mô tả">
@@ -356,8 +407,13 @@ const CreateProductForm = ({
                 onChange={set("description")}
                 placeholder="Mô tả ngắn về sản phẩm..."
                 rows={3}
-                className={inputCls}
+                className={`${inputCls}${errCls(errors.description)}`}
               />
+              {errors.description && (
+                <p className="mt-1.5 text-xs text-destructive">
+                  {errors.description}
+                </p>
+              )}
             </Field>
 
             <Field label="Thumbnail">
@@ -448,27 +504,38 @@ const CreateProductForm = ({
               </div>
             ) : (
               <div className="space-y-2">
-                {specTemplates.map((t) => (
-                  <div
-                    key={idOf(t)}
-                    className="grid grid-cols-3 items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/40 px-3 py-2"
-                  >
-                    <span className="text-sm font-medium text-zinc-700">
-                      {nameOf(t)}
-                    </span>
-                    <Input
-                      className={`col-span-2 ${inputCls}`}
-                      placeholder={`Nhập ${nameOf(t)}`}
-                      value={specValues[idOf(t)] ?? ""}
-                      onChange={(e) =>
-                        setSpecValues((v) => ({
-                          ...v,
-                          [idOf(t)]: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                ))}
+                {specTemplates.map((t, idx) => {
+                  const specErr = errors[`specifications[${idx}].value`];
+                  return (
+                    <div
+                      key={idOf(t)}
+                      className="grid grid-cols-3 items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/40 px-3 py-2"
+                    >
+                      <span className="text-sm font-medium text-zinc-700">
+                        {nameOf(t)}
+                      </span>
+                      <div className="col-span-2">
+                        <Input
+                          className={`${inputCls}${errCls(specErr)}`}
+                          placeholder={`Nhập ${nameOf(t)}`}
+                          value={specValues[idOf(t)] ?? ""}
+                          onChange={(e) => {
+                            setSpecValues((v) => ({
+                              ...v,
+                              [idOf(t)]: e.target.value,
+                            }));
+                            clearError(`specifications[${idx}].value`);
+                          }}
+                        />
+                        {specErr && (
+                          <p className="mt-1.5 text-xs text-destructive">
+                            {specErr}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>

@@ -9,6 +9,7 @@
         public string? Brand { get; set; }
         public decimal? Price { get; set; }
         public string? ThumnailUrl { get; set; }
-
+        public int CommentCount { get; set; }
+        public bool IsCreatedByExpert { get; set; }
     }
 }

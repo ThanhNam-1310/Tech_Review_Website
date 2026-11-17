@@ -5,5 +5,5 @@ export const GetAllRole = () => {
 }
 
 export const SetRoleUser = (userId, roleId) => {
-    return api.patch(`role/${roleId}/user/${userId}`)
+    return api.patch(`roles/${roleId}/user/${userId}`)
 }

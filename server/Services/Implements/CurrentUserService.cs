@@ -23,5 +23,7 @@ namespace server.Services.Implements
         public bool IsAuthen => User?.Identity?.IsAuthenticated ?? false;
 
         public bool HasPermission(string permission) => User?.FindAll("permission").Any(c => c.Value == permission) ?? false;
+        public string? IpAddress => accessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        public string? UserAgent => accessor.HttpContext?.Request.Headers["User-Agent"].ToString();
     }
 }

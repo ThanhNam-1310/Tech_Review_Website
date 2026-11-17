@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using server.Services.Interfaces;
 using server.Storage;
 using System.Net.Http.Headers;
@@ -25,6 +24,8 @@ public class ImageService : IImageService
         _httpClient.BaseAddress = new Uri(_settings.Url.TrimEnd('/') + "/");
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
             "apikey", _settings.Key);
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", _settings.Key);
     }
 
     public async Task<string> UploadAsync(
@@ -68,7 +69,12 @@ public class ImageService : IImageService
             $"storage/v1/object/{Uri.EscapeDataString(bucketName)}/{encodedPath}",
             content);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException(
+                $"Supabase upload thất bại {(int)response.StatusCode}: {errorBody}");
+        }
 
         return $"{_settings.Url.TrimEnd('/')}/storage/v1/object/public/" +
                $"{Uri.EscapeDataString(bucketName)}/{encodedPath}";
@@ -99,6 +105,11 @@ public class ImageService : IImageService
         using var response = await _httpClient.DeleteAsync(
             $"storage/v1/object/{Uri.EscapeDataString(bucketName)}/{path}");
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException(
+                $"Supabase xóa ảnh thất bại {(int)response.StatusCode}: {errorBody}");
+        }
     }
 }

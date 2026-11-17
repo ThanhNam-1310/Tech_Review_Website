@@ -19,5 +19,8 @@ namespace server.Dtos.Posts
         public bool IsHightLight { get; set; }
         public RatingDTO? Rating { get; set; }
         public List<PostContentDTO> Contents { get; set; } = [];
+
+        // đánh dấu user có like bài viết
+        public bool IsLiked { get; set; }
     }
 }

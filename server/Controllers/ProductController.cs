@@ -133,29 +133,5 @@ namespace server.Controllers
             return Ok(result);
         }
 
-        // POST: api/product/{id}/view
-        [HttpPost("{id:guid}/view")]
-        public async Task<IActionResult> ViewProduct(Guid id)
-        {
-            await _product.IncreaseViewCountAsync(id);
-            return Ok();
-        }
-
-        // POST: api/product/{id}/like
-        [HttpPost("{id:guid}/like")]
-        public async Task<IActionResult> LikeProduct(Guid id)
-        {
-            await _product.TangLikeCountAsync(id);
-            return Ok();
-        }
-
-        // DELETE: api/product/{id}/dislike
-        [HttpDelete("{id:guid}/dislike")]
-        public async Task<IActionResult> GiamLikeProduct(Guid id)
-        {
-            await _product.GiamLikeCountAsync(id);
-            return Ok();
-        }
-
     }
 }

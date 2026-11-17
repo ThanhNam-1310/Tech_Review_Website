@@ -13,6 +13,7 @@ namespace server.Dtos.Products
         public string? ThumnailUrl { get; set; }
         public List<string> Images { get; set; } = [];
         public RatingDTO? Rating { get; set; }
+        public bool IsCreatedByExpert { get; set; }
         public List<Product_SpecificationDTO> Specifications { get; set; } = [];
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

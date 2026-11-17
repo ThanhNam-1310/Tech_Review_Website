@@ -32,6 +32,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Newspaper,
 } from "lucide-react";
 import PostForm from "@/components/forms/CreatePostForm";
 
@@ -73,13 +74,13 @@ const Thumb = ({ src, className }) =>
     <img
       src={src}
       alt=""
-      className={`object-cover rounded border shrink-0 ${className}`}
+      className={`object-cover rounded-xl border border-sky-100 shadow-sm shrink-0 ${className}`}
     />
   ) : (
     <div
-      className={`rounded border bg-muted flex items-center justify-center shrink-0 ${className}`}
+      className={`rounded-xl border border-sky-100 bg-sky-50 flex items-center justify-center shrink-0 ${className}`}
     >
-      <ImageOff className="h-4 w-4 text-muted-foreground" />
+      <ImageOff className="h-4 w-4 text-sky-300" />
     </div>
   );
 
@@ -94,25 +95,29 @@ const SearchBox = ({
 }) => (
   <div className="flex flex-1 gap-2">
     <div className="relative flex-1">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-500" />
       <Input
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && onSearch()}
-        className="pl-9 pr-9"
+        className="pl-9 pr-9 rounded-xl border-sky-100 bg-white focus-visible:border-sky-300 focus-visible:ring-sky-400"
       />
       {value && (
         <button
           type="button"
           onClick={onClear}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-sky-700"
         >
           <X className="h-4 w-4" />
         </button>
       )}
     </div>
-    <Button onClick={onSearch} disabled={loading}>
+    <Button
+      onClick={onSearch}
+      disabled={loading}
+      className="rounded-xl bg-gradient-to-r from-sky-500 to-teal-500 font-semibold text-white shadow-md shadow-sky-500/25 hover:from-sky-600 hover:to-teal-600"
+    >
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Tìm kiếm"}
     </Button>
   </div>
@@ -167,7 +172,7 @@ const AdminPostsPage = () => {
       const item = res.data?.items?.[0];
       setHero(item ? normalizePost(item) : null);
     } catch (err) {
-      console.error("Lỗi load hero:", err);
+      console.error("Lỗi load bài viết nổi bật:", err);
     }
   };
 
@@ -262,27 +267,32 @@ const AdminPostsPage = () => {
   return (
     <div className="space-y-6 p-4 md:p-6">
       {/* ===== CARD TRÊN: bài viết chủ đề (Hero) ===== */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Star className="h-4 w-4 text-yellow-500" />
-            Bài viết chủ đề (Hero)
+      <Card className="overflow-hidden rounded-2xl border-sky-100 shadow-lg shadow-sky-500/10">
+        <div className="h-1.5 bg-gradient-to-r from-sky-500 via-teal-500 to-cyan-400" />
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-teal-500 text-white shadow-sm shadow-sky-500/25">
+              <Star className="h-4 w-4" />
+            </span>
+            Bài viết nổi bật:
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-4">
           {hero ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 rounded-2xl border border-teal-100 bg-gradient-to-r from-teal-50 to-sky-50 p-4">
               <Thumb src={hero.thumbnail} className="w-24 h-16" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate">{hero.title}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-zinc-500">
                   {hero.author || "—"} • {formatDate(hero.date)}
                 </p>
               </div>
-              <Badge>Đang hiển thị</Badge>
+              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                Đang hiển thị
+              </Badge>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-zinc-500">
               Chưa có bài chủ đề. Tìm bài bên dưới và đặt làm chủ đề.
             </p>
           )}
@@ -297,36 +307,39 @@ const AdminPostsPage = () => {
           />
 
           {heroSearching && (
-            <p className="text-sm text-muted-foreground">Đang tìm...</p>
+            <p className="text-sm text-zinc-500">Đang tìm...</p>
           )}
 
           {!heroSearching && heroSearched && heroResults.length === 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-zinc-500">
               Không tìm thấy bài viết nào.
             </p>
           )}
 
           {heroResults.length > 0 && (
-            <div className="space-y-1 rounded-lg border p-2">
+            <div className="space-y-1 rounded-xl border border-sky-100 bg-white p-2">
               {heroResults.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-3 rounded-md p-2 hover:bg-muted/50"
+                  className="flex items-center gap-3 rounded-lg p-2 hover:bg-sky-50"
                 >
                   <Thumb src={p.thumbnail} className="w-16 h-11" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{p.title}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-zinc-500">
                       {formatDate(p.date)}
                     </p>
                   </div>
                   {p.isHightLight ? (
-                    <Badge variant="secondary">Chủ đề</Badge>
+                    <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-100">
+                      Chủ đề
+                    </Badge>
                   ) : (
                     <Button
                       size="sm"
                       disabled={settingId === p.id}
                       onClick={() => handleSetHero(p)}
+                      className="rounded-xl bg-gradient-to-r from-sky-500 to-teal-500 font-semibold text-white shadow-md shadow-sky-500/25 hover:from-sky-600 hover:to-teal-600"
                     >
                       {settingId === p.id && (
                         <Loader2 className="mr-1 h-3 w-3 animate-spin" />
@@ -339,7 +352,7 @@ const AdminPostsPage = () => {
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-zinc-400">
             Chỉ 1 bài được làm chủ đề tại 1 thời điểm — đặt bài mới sẽ tự gỡ bài
             cũ.
           </p>
@@ -347,13 +360,17 @@ const AdminPostsPage = () => {
       </Card>
 
       {/* ===== CARD DƯỚI: danh sách bài viết ===== */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
+      <Card className="overflow-hidden rounded-2xl border-sky-100 shadow-lg shadow-sky-500/10">
+        <div className="h-1.5 bg-gradient-to-r from-sky-500 via-teal-500 to-cyan-400" />
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-teal-500 text-white shadow-sm shadow-sky-500/25">
+              <Newspaper className="h-4 w-4" />
+            </span>
             Danh sách bài viết ({totalCount})
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-3 pt-4">
           {/* Ô search + nút thêm bài viết */}
           <div className="flex gap-2 pb-2">
             <SearchBox
@@ -364,16 +381,19 @@ const AdminPostsPage = () => {
               placeholder="Tìm theo tiêu đề hoặc mô tả (gõ không dấu cũng được)..."
               loading={loading}
             />
-            <Button onClick={() => setFormDialog({ postId: null })}>
+            <Button
+              onClick={() => setFormDialog({ postId: null })}
+              className="rounded-xl bg-gradient-to-r from-sky-500 to-teal-500 font-semibold text-white shadow-md shadow-sky-500/25 hover:from-sky-600 hover:to-teal-600"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Thêm bài viết
             </Button>
           </div>
 
           {activeSearch && (
-            <p className="text-sm text-muted-foreground pb-1">
+            <p className="text-sm text-zinc-500 pb-1">
               Kết quả cho{" "}
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-zinc-900">
                 "{activeSearch}"
               </span>{" "}
               — {totalCount} bài viết
@@ -381,11 +401,11 @@ const AdminPostsPage = () => {
           )}
 
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="text-sm text-zinc-500 py-8 text-center">
               Đang tải...
             </p>
           ) : posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="text-sm text-zinc-500 py-8 text-center">
               {activeSearch
                 ? `Không tìm thấy bài viết nào khớp "${activeSearch}".`
                 : "Chưa có bài viết nào."}
@@ -394,36 +414,41 @@ const AdminPostsPage = () => {
             posts.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-4 rounded-lg border p-3"
+                className="flex items-center gap-4 rounded-2xl border border-sky-100 bg-white p-3 shadow-sm hover:shadow-md hover:border-sky-200 transition-shadow"
               >
                 <Thumb src={p.thumbnail} className="w-20 h-14" />
 
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/post/${p.id}`}
-                    className="font-medium text-sm truncate hover:underline block"
+                    className="font-medium text-sm truncate hover:underline hover:text-sky-600 block"
                   >
                     {p.title}
                   </Link>
-                  <p className="text-xs text-muted-foreground flex items-center gap-3 mt-1">
+                  <p className="text-xs text-zinc-500 flex items-center gap-3 mt-1">
                     <span>{p.author || "—"}</span>
                     <span>{formatDate(p.date)}</span>
                     <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" /> {p.views}
+                      <Eye className="h-3 w-3 text-sky-500" /> {p.views}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Heart className="h-3 w-3" /> {p.likes}
+                      <Heart className="h-3 w-3 text-rose-500" /> {p.likes}
                     </span>
                   </p>
                 </div>
 
-                {p.isHightLight && <Badge variant="secondary">Chủ đề</Badge>}
+                {p.isHightLight && (
+                  <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-100">
+                    Chủ đề
+                  </Badge>
+                )}
 
                 <div className="flex items-center gap-2 shrink-0">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setFormDialog({ postId: p.id })}
+                    className="rounded-xl border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-700"
                   >
                     <Pencil className="h-3 w-3 mr-1" />
                     Sửa
@@ -433,6 +458,7 @@ const AdminPostsPage = () => {
                     variant="destructive"
                     disabled={deletingId === p.id}
                     onClick={() => handleDelete(p)}
+                    className="rounded-xl"
                   >
                     {deletingId === p.id ? (
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
@@ -457,7 +483,7 @@ const AdminPostsPage = () => {
                     className={
                       pageNumber <= 1
                         ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
+                        : "cursor-pointer hover:bg-sky-50 hover:text-sky-700"
                     }
                   />
                 </PaginationItem>
@@ -470,7 +496,11 @@ const AdminPostsPage = () => {
                       <PaginationLink
                         isActive={item === pageNumber}
                         onClick={() => fetchPage(item, activeSearch)}
-                        className="cursor-pointer"
+                        className={
+                          item === pageNumber
+                            ? "cursor-pointer bg-sky-500 text-white border-sky-500 hover:bg-sky-600 hover:text-white"
+                            : "cursor-pointer hover:bg-sky-50 hover:text-sky-700"
+                        }
                       >
                         {item}
                       </PaginationLink>
@@ -487,7 +517,7 @@ const AdminPostsPage = () => {
                     className={
                       pageNumber >= totalPages
                         ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
+                        : "cursor-pointer hover:bg-sky-50 hover:text-sky-700"
                     }
                   />
                 </PaginationItem>
@@ -502,7 +532,7 @@ const AdminPostsPage = () => {
         open={!!formDialog}
         onOpenChange={(o) => !o && setFormDialog(null)}
       >
-        <DialogContent className="w-[96vw] max-w-4xl sm:max-w-4xl max-h-[92vh] overflow-y-auto">
+        <DialogContent className="w-[96vw] max-w-4xl sm:max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle>
               {formDialog?.postId ? "Sửa bài viết" : "Tạo bài viết mới"}

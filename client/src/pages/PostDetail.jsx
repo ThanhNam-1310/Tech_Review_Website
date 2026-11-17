@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft, Eye, Heart } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Comments from "@/components/common/Comment";
-import { GetDetailPostById } from "@/apis/post.api";
+import {
+  GetDetailPostById,
+  GetRatingViewPost,
+  ActionLikePost,
+  ActionDisLikePost,
+} from "@/apis/post.api";
+import { getMe } from "@/apis/auth.api";
 import Recommendations from "@/components/common/Recommendations";
 
 // PostContentType ở BE: Image = 1, Text = 2
@@ -18,6 +25,25 @@ export default function PostDetail() {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [liking, setLiking] = useState(false);
+
+  // Hỏi BE "tôi là ai" để biết có được quyền thích bài viết không
+  useEffect(() => {
+    let cancelled = false;
+    getMe()
+      .then((res) => {
+        if (!cancelled) setCurrentUser(res.data?.data ?? res.data ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCurrentUser(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -40,6 +66,11 @@ export default function PostDetail() {
         }
 
         setPost(result);
+        setIsLiked(result.isLiked ?? false);
+        setLikeCount(result.rating?.likeCount ?? 0);
+
+        // Ghi nhận lượt xem: không chặn UI, lỗi thì bỏ qua
+        GetRatingViewPost(id).catch(() => {});
       } catch (err) {
         console.error("Fetch post error:", err.response?.data || err);
         setError(
@@ -54,6 +85,35 @@ export default function PostDetail() {
 
     fetchPost();
   }, [id]);
+
+  const handleToggleLike = async () => {
+    if (!currentUser) {
+      toast.error("Bạn cần đăng nhập để thích bài viết.");
+      return;
+    }
+    if (liking) return;
+
+    setLiking(true);
+    try {
+      const res = isLiked
+        ? await ActionDisLikePost(id)
+        : await ActionLikePost(id);
+      const data = res.data?.data ?? res.data;
+      setIsLiked(data.isLiked);
+      setLikeCount(data.likeCount);
+    } catch (err) {
+      console.error("Toggle like error:", err.response?.data || err);
+      if (err.response?.status === 401) {
+        // Phiên hết hạn giữa chừng: về trạng thái chưa đăng nhập
+        setCurrentUser(null);
+        toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
+      } else {
+        toast.error("Không thể thích bài viết, vui lòng thử lại.");
+      }
+    } finally {
+      setLiking(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -132,10 +192,18 @@ export default function PostDetail() {
               {rating.viewCount ?? 0}
             </span>
 
-            <span className="flex items-center gap-1">
-              <Heart className="h-3.5 w-3.5" />
-              {rating.likeCount ?? 0}
-            </span>
+            <button
+              type="button"
+              onClick={handleToggleLike}
+              disabled={liking}
+              title={isLiked ? "Bỏ thích" : "Thích"}
+              className={`flex items-center gap-1 transition-colors ${isLiked ? "text-red-500" : "hover:text-red-500"}`}
+            >
+              <Heart
+                className={`h-3.5 w-3.5 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
+              />
+              {likeCount}
+            </button>
           </div>
 
           {/* Thumbnail */}
@@ -183,7 +251,7 @@ export default function PostDetail() {
 
         {/* Comments */}
         <div className="mx-auto max-w-3xl">
-          <Comments type="post" targetId={id} />
+          <Comments type="post" targetId={id} authorId={post.authorId} />
         </div>
 
         <Separator className="mx-auto my-10 max-w-3xl md:my-14" />

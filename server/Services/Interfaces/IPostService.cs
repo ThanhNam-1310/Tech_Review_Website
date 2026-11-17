@@ -43,9 +43,7 @@ namespace server.Services.Interfaces
 
         // Rating
         Task IncreaseViewCountAsync(Guid postId);
-        Task TangLikeCountAsync(Guid postId);
-        Task GiamLikeCountAsync(Guid postId);
-        Task TangCommentAsync(Guid postId);
-        Task GiamCommentAsync(Guid postId);
+        Task<(bool IsLiked, int LikeCount)> TangLikeCountAsync(Guid postId);
+        Task<(bool IsLiked, int LikeCount)> GiamLikeCountAsync(Guid postId);
     }
 }

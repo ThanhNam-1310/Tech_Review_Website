@@ -15,7 +15,7 @@ const PostBadges = ({ post }) => {
   return (
     <div className="flex flex-wrap gap-1.5">
       {post.isHightLight && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+        <span className="inline-flex items-center gap-1 rounded-full bg-teal-500 px-2 py-0.5 text-[11px] font-semibold text-white">
           <Star className="h-3 w-3 fill-white" />
           Nổi bật
         </span>
@@ -32,18 +32,18 @@ const PostBadges = ({ post }) => {
 
 const PostMeta = ({ post, className = "" }) => (
   <p
-    className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground ${className}`}
+    className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-500 ${className}`}
   >
     {post.authorName && (
-      <span className="font-medium text-foreground/80">{post.authorName}</span>
+      <span className="font-medium text-slate-700">{post.authorName}</span>
     )}
     {post.publicDate && <span>{formatDate(post.publicDate)}</span>}
     <span className="inline-flex items-center gap-1">
-      <Eye className="h-3.5 w-3.5" />
+      <Eye className="h-3.5 w-3.5 text-sky-500" />
       {post.viewCount ?? 0}
     </span>
     <span className="inline-flex items-center gap-1">
-      <Heart className="h-3.5 w-3.5" />
+      <Heart className="h-3.5 w-3.5 text-rose-500" />
       {post.likeCount ?? 0}
     </span>
   </p>
@@ -61,9 +61,9 @@ export default function PostCard({ post, variant = "row" }) {
     return (
       <Link
         to={href}
-        className={`group block rounded-2xl border ${cat.bg} ${cat.border} p-4`}
+        className={`group block rounded-2xl border ${cat.bg} ${cat.border} p-4 shadow-sm transition-shadow hover:shadow-md`}
       >
-        <div className="relative overflow-hidden rounded-xl border">
+        <div className="relative overflow-hidden rounded-xl border border-sky-100">
           {post.thumbnailUrl ? (
             <img
               src={post.thumbnailUrl}
@@ -71,13 +71,13 @@ export default function PostCard({ post, variant = "row" }) {
               className="aspect-[16/9] w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="aspect-[16/9] w-full bg-muted" />
+            <div className="aspect-[16/9] w-full bg-sky-50" />
           )}
           <div className="absolute left-3 top-3">
             <PostBadges post={post} />
           </div>
         </div>
-        <h3 className="mt-3 text-xl font-bold leading-snug transition-colors group-hover:text-orange-600 line-clamp-2 md:text-2xl">
+        <h3 className="mt-3 text-xl font-bold leading-snug transition-colors group-hover:text-sky-600 line-clamp-2 md:text-2xl">
           {post.title}
         </h3>
         <PostMeta post={post} className="mt-2 text-sm" />
@@ -90,9 +90,9 @@ export default function PostCard({ post, variant = "row" }) {
     return (
       <Link
         to={href}
-        className={`group block rounded-2xl border ${cat.bg} ${cat.border} p-3`}
+        className={`group block rounded-2xl border ${cat.bg} ${cat.border} p-3 shadow-sm transition-shadow hover:shadow-md`}
       >
-        <div className="relative overflow-hidden rounded-xl border">
+        <div className="relative overflow-hidden rounded-xl border border-sky-100">
           {post.thumbnailUrl ? (
             <img
               src={post.thumbnailUrl}
@@ -100,13 +100,13 @@ export default function PostCard({ post, variant = "row" }) {
               className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="aspect-video w-full bg-muted" />
+            <div className="aspect-video w-full bg-sky-50" />
           )}
           <div className="absolute left-3 top-3">
             <PostBadges post={post} />
           </div>
         </div>
-        <h3 className="mt-3 font-semibold leading-snug transition-colors group-hover:text-orange-600 line-clamp-2">
+        <h3 className="mt-3 font-semibold leading-snug transition-colors group-hover:text-sky-600 line-clamp-2">
           {post.title}
         </h3>
         <PostMeta post={post} className="mt-1.5 text-xs" />
@@ -118,20 +118,20 @@ export default function PostCard({ post, variant = "row" }) {
   return (
     <Link
       to={href}
-      className={`group flex gap-4 rounded-xl border ${cat.bg} ${cat.border} px-4 py-4`}
+      className={`group flex gap-4 rounded-xl border ${cat.bg} ${cat.border} px-4 py-4 shadow-sm transition-shadow hover:shadow-md`}
     >
       {post.thumbnailUrl ? (
         <img
           src={post.thumbnailUrl}
           alt={post.title}
-          className="aspect-[4/3] w-36 shrink-0 rounded-lg border object-cover md:w-44"
+          className="aspect-[4/3] w-36 shrink-0 rounded-lg border border-sky-100 object-cover md:w-44"
         />
       ) : (
-        <div className="aspect-[4/3] w-36 shrink-0 rounded-lg border bg-muted md:w-44" />
+        <div className="aspect-[4/3] w-36 shrink-0 rounded-lg border border-sky-100 bg-sky-50 md:w-44" />
       )}
       <div className="min-w-0 flex-1">
         <PostBadges post={post} />
-        <h3 className="mt-1 font-semibold leading-snug transition-colors group-hover:text-orange-600 line-clamp-2">
+        <h3 className="mt-1 font-semibold leading-snug transition-colors group-hover:text-sky-600 line-clamp-2">
           {post.title}
         </h3>
         <PostMeta post={post} className="mt-1.5 text-xs" />

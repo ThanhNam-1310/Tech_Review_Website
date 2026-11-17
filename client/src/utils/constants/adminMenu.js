@@ -65,7 +65,7 @@ export const ADMIN_MENU = [
       },
       {
         label: "Phân quyền người dùng",
-        path: "/admin/users/roles",
+        path: "/admin/users/role-assignment",
         icon: UserCog,
       },
     ],

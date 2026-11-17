@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { userUpdateSchema, validateSchema, errCls } from "@/validation/schemas";
 
 // Nhãn tiếng Việt cho role — không hiển thị tên thô của BE
 const ROLE_LABELS = {
@@ -82,6 +83,15 @@ const UserFormDialog = ({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const clearError = (field) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   const [roles, setRoles] = useState([]);
   const [currentRoleId, setCurrentRoleId] = useState("");
@@ -93,6 +103,7 @@ const UserFormDialog = ({
     setEmail(initialData?.email ?? "");
     setCurrentRoleId("");
     setSelectedRoleId("");
+    setErrors({});
 
     // Load roles + khớp role hiện tại của user theo roleName
     GetAllRole()
@@ -118,6 +129,10 @@ const UserFormDialog = ({
   const roleChanged = selectedRoleId !== "" && selectedRoleId !== currentRoleId;
 
   const handleSubmit = async () => {
+    const errs = await validateSchema(userUpdateSchema, { fullName, email });
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setSubmitting(true);
     try {
       // 1. Cập nhật họ tên / email qua page
@@ -190,8 +205,15 @@ const UserFormDialog = ({
             <Input
               id="fullName"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                clearError("fullName");
+              }}
+              className={errCls(errors.fullName)}
             />
+            {errors.fullName && (
+              <p className="text-xs text-destructive">{errors.fullName}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -200,8 +222,15 @@ const UserFormDialog = ({
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError("email");
+              }}
+              className={errCls(errors.email)}
             />
+            {errors.email && (
+              <p className="text-xs text-destructive">{errors.email}</p>
+            )}
           </div>
 
           {/* ===== Vai trò ===== */}

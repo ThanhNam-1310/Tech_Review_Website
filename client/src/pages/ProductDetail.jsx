@@ -80,7 +80,11 @@ export default function ProductDetail() {
             <Separator className="my-10 md:my-14" />
             <Recommendations type="product" id={id} />
             <Separator className="my-10 md:my-14" />
-            <Comments type="product" targetId={id} />
+            <Comments
+              type="product"
+              targetId={id}
+              authorId={product.authorId}
+            />
           </>
         ) : (
           <div className="py-16 text-center text-muted-foreground">

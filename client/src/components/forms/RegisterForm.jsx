@@ -13,6 +13,7 @@ import {
 import { LockKeyhole, User, Mail, Eye, EyeClosed } from "lucide-react";
 import { register } from "@/apis/auth.api";
 import { toast } from "sonner";
+import { registerSchema, validateSchema, errCls } from "@/validation/schemas";
 
 const RegisterForm = ({ onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [passwordShow, setPasswordShow] = useState(false);
   const [confirmPasswordShow, setConfirmPasswordShow] = useState(false);
@@ -36,6 +38,12 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       ...prev,
       [name]: value,
     }));
+    setFieldErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
   };
 
   const handleTogglePassword = () => {
@@ -50,18 +58,9 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     e.preventDefault();
 
     setError("");
-
-    if (formData.password !== formData.confirmPassword) {
-      const errorMessage = "Mật khẩu xác nhận không khớp.";
-
-      setError(errorMessage);
-
-      toast.error(errorMessage, {
-        duration: 5000,
-      });
-
-      return;
-    }
+    const errs = await validateSchema(registerSchema, formData);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
     setLoading(true);
 
@@ -122,10 +121,13 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       </CardHeader>
 
       <CardContent className="px-0 sm:px-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
           {/* Full Name */}
           <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-sm font-medium text-zinc-700">
+            <Label
+              htmlFor="fullName"
+              className="text-sm font-medium text-zinc-700"
+            >
               Họ và tên
             </Label>
 
@@ -137,18 +139,23 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 name="fullName"
                 type="text"
                 placeholder="Nhập họ và tên của bạn."
-                required
                 value={formData.fullName}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.fullName)}`}
               />
             </div>
+            {fieldErrors.fullName && (
+              <p className="text-xs text-destructive">{fieldErrors.fullName}</p>
+            )}
           </div>
 
           {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-zinc-700">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-zinc-700"
+            >
               Email
             </Label>
 
@@ -160,18 +167,23 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 name="email"
                 type="email"
                 placeholder="Nhập email của bạn."
-                required
                 value={formData.email}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.email)}`}
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-xs text-destructive">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* UserName */}
           <div className="space-y-2">
-            <Label htmlFor="userName" className="text-sm font-medium text-zinc-700">
+            <Label
+              htmlFor="userName"
+              className="text-sm font-medium text-zinc-700"
+            >
               Tên đăng nhập
             </Label>
 
@@ -183,18 +195,23 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 name="userName"
                 type="text"
                 placeholder="Nhập tên tài khoản của bạn."
-                required
                 value={formData.userName}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.userName)}`}
               />
             </div>
+            {fieldErrors.userName && (
+              <p className="text-xs text-destructive">{fieldErrors.userName}</p>
+            )}
           </div>
 
           {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-zinc-700">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-zinc-700"
+            >
               Mật khẩu
             </Label>
 
@@ -206,11 +223,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 name="password"
                 type={passwordShow ? "text" : "password"}
                 placeholder="Nhập mật khẩu"
-                required
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 pr-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 pr-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.password)}`}
               />
 
               <button
@@ -225,11 +241,17 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 )}
               </button>
             </div>
+            {fieldErrors.password && (
+              <p className="text-xs text-destructive">{fieldErrors.password}</p>
+            )}
           </div>
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-zinc-700">
+            <Label
+              htmlFor="confirmPassword"
+              className="text-sm font-medium text-zinc-700"
+            >
               Xác nhận mật khẩu
             </Label>
 
@@ -241,11 +263,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 name="confirmPassword"
                 type={confirmPasswordShow ? "text" : "password"}
                 placeholder="Nhập lại mật khẩu"
-                required
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={loading}
-                className="h-11 rounded-xl border-orange-100 bg-white pl-10 pr-10 focus-visible:border-orange-300 focus-visible:ring-orange-400"
+                className={`h-11 rounded-xl border-orange-100 bg-white pl-10 pr-10 focus-visible:border-orange-300 focus-visible:ring-orange-400${errCls(fieldErrors.confirmPassword)}`}
               />
 
               <button
@@ -260,6 +281,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 )}
               </button>
             </div>
+            {fieldErrors.confirmPassword && (
+              <p className="text-xs text-destructive">
+                {fieldErrors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {/* Error */}

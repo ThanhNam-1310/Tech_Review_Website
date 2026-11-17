@@ -13,5 +13,6 @@ namespace server.Dtos.Posts
         public bool IsHightLight { get; set; } = false;
         public int ViewCount { get; set; }
         public int LikeCount { get; set; }
+        public int CommentCount { get; set; }
     }
 }

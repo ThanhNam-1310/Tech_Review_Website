@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Bson;
@@ -6,6 +7,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using Serilog;
 using Serilog.Events;
 using server.Common.Authorization;
+using server.Common.Filters;
 using server.Configurations;
 using server.Data;
 using server.Data.Seeder;
@@ -14,6 +16,7 @@ using server.Models;
 using server.Services.Implements;
 using server.Services.Interfaces;
 using server.Storage;
+using server.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,7 +70,13 @@ try
     // Controllers
     // ==============================
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options => options.Filters.Add<FluentValidationFilter>());
+
+    // ==============================
+    // FluentValidation
+    // ==============================
+
+    builder.Services.AddValidatorsFromAssemblyContaining<LoginDTOValidator>();
 
     // ==============================
     // Swagger
@@ -78,6 +87,8 @@ try
     // ==============================
     // Services
     // ==============================
+    builder.Services.AddMemoryCache();
+    builder.Services.AddScoped<IViewTrackingService, ViewTrackingService>();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -132,6 +143,9 @@ try
 
         await PermissionSeeder.SeedPermissionAsync(context);
         await RoleSeeder.SeedRoleAsync(context);
+
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+        await AdminSeeder.SeedAdminAsync(context, passwordHasher);
     }
 
     // ==============================

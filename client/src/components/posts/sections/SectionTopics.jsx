@@ -8,8 +8,8 @@ const SectionTopics = ({ topics = [], getHref }) => {
   return (
     <section>
       <div className="relative mb-6">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-orange-500 via-amber-400 to-transparent" />
-        <h3 className="relative inline-block rounded-b-lg bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm shadow-orange-500/25">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-sky-500 via-teal-400 to-transparent" />
+        <h3 className="relative inline-block rounded-b-lg bg-gradient-to-r from-sky-500 to-teal-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm shadow-sky-500/25">
           Khám phá theo chủ đề
         </h3>
       </div>
@@ -20,7 +20,7 @@ const SectionTopics = ({ topics = [], getHref }) => {
           return (
             <Link key={topic.id} to={hrefOf(topic)}>
               <Card
-                className={`${cat.bg} ${cat.border} transition-all hover:-translate-y-0.5 hover:shadow-md`}
+                className={`${cat.bg} ${cat.border} shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md`}
               >
                 <CardContent className="flex items-center justify-center px-4 py-8">
                   <span

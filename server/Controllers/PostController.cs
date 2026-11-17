@@ -86,6 +86,7 @@ namespace server.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         // POST: api/post/create
         [HttpPost("create")]
         public async Task<IActionResult> CreateNewPost(
@@ -146,20 +147,23 @@ namespace server.Controllers
         }
 
         // POST: api/post/{id}/like
+        [Authorize]
         [HttpPost("{id:guid}/like")]
         public async Task<IActionResult> LikePost(Guid id)
         {
-            await _post.TangLikeCountAsync(id);
-            return Ok();
+            var (isLiked, likeCount) = await _post.TangLikeCountAsync(id);
+            return Ok(new { isLiked, likeCount });
         }
 
         // DELETE: api/post/{id}/dislike
+        [Authorize]
         [HttpDelete("{id:guid}/dislike")]
         public async Task<IActionResult> GiamLikePost(Guid id)
         {
-            await _post.GiamLikeCountAsync(id);
-            return Ok();
+            var (isLiked, likeCount) = await _post.GiamLikeCountAsync(id);
+            return Ok(new { isLiked, likeCount });
         }
+
 
 
         // Lấy id của user đang đăng nhập từ JWT

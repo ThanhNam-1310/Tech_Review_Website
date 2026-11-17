@@ -22,6 +22,10 @@ import MyProductsPage from "@/pages/MyProductsPage";
 import AdminPermissionsPage from "@/pages/admin/AdminPermissionsPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import RequireAdmin from "@/components/auth/RequireAdmin";
+import AdminRoleAssignmentPage from "@/pages/admin/AdminRoleAssignmentPage";
+import NotFoundPage from "@/pages/NotFoundPage";
+import UnderDevelopmentPage from "@/pages/UnderDevelopmentPage";
+import RequireAuth from "@/components/auth/RequireAuth";
 
 const router = createBrowserRouter([
   // ===== Public — dùng MainLayout (Header + Outlet) =====
@@ -39,11 +43,19 @@ const router = createBrowserRouter([
       },
       {
         path: "post/new",
-        element: <PostForm />,
+        element: (
+          <RequireAuth>
+            <PostForm />
+          </RequireAuth>
+        ),
       },
       {
         path: "post/edit/:id",
-        element: <PostForm />,
+        element: (
+          <RequireAuth>
+            <PostForm />
+          </RequireAuth>
+        ),
       },
       {
         path: "post/:id",
@@ -80,6 +92,14 @@ const router = createBrowserRouter([
       {
         path: "profile/:id",
         element: <ProfilePage />,
+      },
+      {
+        path: "coming-soon",
+        element: <UnderDevelopmentPage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
     ],
   },
@@ -140,8 +160,20 @@ const router = createBrowserRouter([
         element: <AdminRolesUsersPage />,
       },
       {
+        path: "users/role-assignment",
+        element: <AdminRoleAssignmentPage />,
+      },
+      {
         path: "permissions",
         element: <AdminPermissionsPage />,
+      },
+      {
+        path: "settings",
+        element: <UnderDevelopmentPage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
     ],
   },

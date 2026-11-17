@@ -25,6 +25,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Newspaper,
 } from "lucide-react";
 
 const PAGE_SIZE = 10;
@@ -40,7 +41,7 @@ const normalizePost = (p) => ({
   visibility: p.visibility ?? p.Visibility,
 });
 
-const isPublic = (v) => v === "PostPublic" || v === 1;
+const isPublic = (v) => v === "PostPublic" || v === "postPublic" || v === 1;
 
 const formatDate = (iso) => {
   if (!iso) return "";
@@ -66,13 +67,13 @@ const Thumb = ({ src, className }) =>
     <img
       src={src}
       alt=""
-      className={`object-cover rounded border shrink-0 ${className}`}
+      className={`object-cover rounded-xl border border-orange-100 shadow-sm shrink-0 ${className}`}
     />
   ) : (
     <div
-      className={`rounded border bg-muted flex items-center justify-center shrink-0 ${className}`}
+      className={`rounded-xl border border-orange-100 bg-orange-50 flex items-center justify-center shrink-0 ${className}`}
     >
-      <ImageOff className="h-4 w-4 text-muted-foreground" />
+      <ImageOff className="h-4 w-4 text-orange-300" />
     </div>
   );
 
@@ -151,38 +152,50 @@ const MyPostsPage = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-4xl">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">
+      <Card className="overflow-hidden rounded-2xl border-orange-100 shadow-lg shadow-orange-500/10">
+        <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-400" />
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-sm shadow-orange-500/25">
+              <Newspaper className="h-4 w-4" />
+            </span>
             Bài viết của tôi ({totalCount})
           </CardTitle>
-          <Button size="sm" onClick={() => navigate("/post/new")}>
+          <Button
+            size="sm"
+            onClick={() => navigate("/post/new")}
+            className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 font-semibold text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600"
+          >
             <Plus className="h-4 w-4 mr-1" />
             Tạo bài viết
           </Button>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-3 pt-4">
           <div className="flex gap-2 pb-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-400" />
               <Input
                 placeholder="Tìm trong bài viết của bạn (gõ không dấu cũng được)..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-9 pr-9"
+                className="pl-9 pr-9 rounded-xl border-orange-100 bg-white focus-visible:border-orange-300 focus-visible:ring-orange-400"
               />
               {keyword && (
                 <button
                   type="button"
                   onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-orange-600"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
-            <Button onClick={handleSearch} disabled={loading}>
+            <Button
+              onClick={handleSearch}
+              disabled={loading}
+              className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 font-semibold text-white shadow-md shadow-orange-500/25 hover:from-orange-600 hover:to-amber-600"
+            >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -192,11 +205,11 @@ const MyPostsPage = () => {
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="text-sm text-zinc-500 py-8 text-center">
               Đang tải...
             </p>
           ) : posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
+            <p className="text-sm text-zinc-500 py-8 text-center">
               {activeSearch
                 ? `Không tìm thấy bài viết nào khớp "${activeSearch}".`
                 : "Bạn chưa có bài viết nào."}
@@ -205,30 +218,34 @@ const MyPostsPage = () => {
             posts.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-4 rounded-lg border p-3"
+                className="flex items-center gap-4 rounded-2xl border border-orange-100 bg-white p-3 shadow-sm hover:shadow-md hover:border-orange-200 transition-shadow"
               >
                 <Thumb src={p.thumbnail} className="w-20 h-14" />
 
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/post/${p.id}`}
-                    className="font-medium text-sm truncate hover:underline block"
+                    className="font-medium text-sm truncate hover:underline hover:text-orange-600 block"
                   >
                     {p.title}
                   </Link>
-                  <p className="text-xs text-muted-foreground flex items-center gap-3 mt-1">
+                  <p className="text-xs text-zinc-500 flex items-center gap-3 mt-1">
                     <span>{formatDate(p.date)}</span>
                     <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" /> {p.views}
+                      <Eye className="h-3 w-3 text-sky-500" /> {p.views}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Heart className="h-3 w-3" /> {p.likes}
+                      <Heart className="h-3 w-3 text-rose-500" /> {p.likes}
                     </span>
                   </p>
                 </div>
 
                 <Badge
-                  variant={isPublic(p.visibility) ? "secondary" : "outline"}
+                  className={
+                    isPublic(p.visibility)
+                      ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                      : "bg-amber-100 text-amber-700 hover:bg-amber-100"
+                  }
                 >
                   {isPublic(p.visibility) ? "Công khai" : "Riêng tư"}
                 </Badge>
@@ -238,6 +255,7 @@ const MyPostsPage = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => navigate(`/post/edit/${p.id}`)}
+                    className="rounded-xl border-orange-200 text-orange-700 hover:bg-orange-50 hover:text-orange-700"
                   >
                     <Pencil className="h-3 w-3 mr-1" />
                     Sửa
@@ -247,6 +265,7 @@ const MyPostsPage = () => {
                     variant="destructive"
                     disabled={deletingId === p.id}
                     onClick={() => handleDelete(p)}
+                    className="rounded-xl"
                   >
                     {deletingId === p.id ? (
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
@@ -271,7 +290,7 @@ const MyPostsPage = () => {
                     className={
                       pageNumber <= 1
                         ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
+                        : "cursor-pointer hover:bg-orange-50 hover:text-orange-700"
                     }
                   />
                 </PaginationItem>
@@ -284,7 +303,11 @@ const MyPostsPage = () => {
                       <PaginationLink
                         isActive={item === pageNumber}
                         onClick={() => fetchPage(item, activeSearch)}
-                        className="cursor-pointer"
+                        className={
+                          item === pageNumber
+                            ? "cursor-pointer bg-orange-500 text-white border-orange-500 hover:bg-orange-600 hover:text-white"
+                            : "cursor-pointer hover:bg-orange-50 hover:text-orange-700"
+                        }
                       >
                         {item}
                       </PaginationLink>
@@ -301,7 +324,7 @@ const MyPostsPage = () => {
                     className={
                       pageNumber >= totalPages
                         ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
+                        : "cursor-pointer hover:bg-orange-50 hover:text-orange-700"
                     }
                   />
                 </PaginationItem>
